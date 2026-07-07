@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crónicas de Mazmorra — Acceso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#07050a;--bg:#0c0905;--bg2:#130e07;--bg3:#1c1509;
+  --border:#3a2a10;--border-h:#6a4a1a;
+  --gold:#c9a227;--gold-d:#8a6f1a;--gold-b:#f0c840;
+  --red:#8b1a1a;--red-b:#c0392b;
+  --cream:#f0e6c8;--cream-d:#c4b08a;--cream-m:#8a7a5a;
+  --green:#1a4a1a;--green-b:#3a8a3a;
+  --ink:#07050a;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Crimson Text',Georgia,serif;background:var(--black);color:var(--cream);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none}
+
+/* ── Forms & shared ── */
+.input{width:100%;background:var(--bg3);border:1px solid var(--border-h);color:var(--cream);
+  padding:11px 14px;font-family:'Crimson Text',serif;font-size:16px;border-radius:3px;outline:none;
+  transition:border-color .2s}
+.input:focus{border-color:var(--gold-d)}
+.input::placeholder{color:var(--cream-m)}
+.btn{background:var(--gold-d);color:var(--ink);border:none;padding:11px 22px;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:1px;border-radius:3px;
+  transition:background .2s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn:hover{background:var(--gold)}
+.btn.secondary{background:var(--bg3);color:var(--cream-d);border:1px solid var(--border-h)}
+.btn.secondary:hover{background:var(--bg2);border-color:var(--gold-d);color:var(--gold)}
+.btn.danger{background:rgba(139,26,26,0.3);color:#e07070;border:1px solid var(--red)}
+.btn.danger:hover{background:var(--red)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.full{width:100%}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--cream-m)}
+.error-msg{color:#e07070;font-size:13px;min-height:18px;text-align:center}
+.success-msg{color:#6aaa6a;font-size:13px;min-height:18px;text-align:center}
+
+/* ── Pages ── */
+.page{display:none;position:relative;z-index:1;min-height:100vh}
+.page.active{display:block}
+
+/* ════════════════════════════════
+   AUTH PAGE
+════════════════════════════════ */
+.auth-bg{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(139,26,26,0.15) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 100%,rgba(201,162,39,0.06) 0%,transparent 60%),
+    linear-gradient(180deg,#0c0905 0%,#07050a 100%)}
+.auth-bg::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold-d) 20%,var(--gold) 50%,var(--gold-d) 80%,transparent)}
+
+.auth-box{background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:40px 36px;width:100%;max-width:420px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(201,162,39,0.05)}
+
+.auth-logo{text-align:center;margin-bottom:32px}
+.auth-logo .emblem{font-size:44px;display:block;margin-bottom:10px;
+  filter:drop-shadow(0 0 12px rgba(201,162,39,0.4))}
+.auth-logo h1{font-family:'Cinzel Decorative',serif;font-size:20px;
+  background:linear-gradient(180deg,var(--gold-b) 0%,var(--gold) 50%,var(--gold-d) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-logo p{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:var(--cream-m);margin-top:4px}
+
+.auth-tabs{display:flex;margin-bottom:28px;border-bottom:1px solid var(--border)}
+.auth-tab{flex:1;padding:10px;text-align:center;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;color:var(--cream-m);
+  border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.auth-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+.auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--cream-m);font-size:12px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.forgot-link{display:block;text-align:right;font-size:12px;color:var(--cream-m);
+  cursor:pointer;margin-top:-8px;margin-bottom:14px;text-decoration:underline}
+.forgot-link:hover{color:var(--gold-d)}
+
+/* ════════════════════════════════
+   DASHBOARD
+════════════════════════════════ */
+.dash-header{
+  background:linear-gradient(180deg,var(--bg2) 0%,transparent 100%);
+  border-bottom:1px solid var(--border);
+  padding:16px 28px;position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;gap:16px}
+.dash-logo{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold);flex:1}
+.dash-user{font-family:'Cinzel',serif;font-size:10px;color:var(--cream-m);letter-spacing:.5px}
+.dash-user span{color:var(--gold-d)}
+
+.dash-body{max-width:1000px;margin:0 auto;padding:32px 24px}
+
+.dash-section-title{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--gold-d);
+  text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+
+/* Campaign cards grid */
+.campaign-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px}
+
+.campaign-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:20px;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;
+  position:relative;overflow:hidden}
+.campaign-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold-d),transparent);opacity:0;transition:opacity .2s}
+.campaign-card:hover{border-color:var(--border-h);transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.campaign-card:hover::before{opacity:1}
+
+.campaign-card.as-player::before{
+  background:linear-gradient(90deg,transparent,#3a8a3a,transparent)}
+.campaign-card.as-player{border-color:rgba(26,74,26,0.5)}
+.campaign-card.as-player:hover{border-color:#3a8a3a}
+
+.cc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.cc-icon{font-size:28px;flex-shrink:0}
+.cc-info{flex:1;min-width:0}
+.cc-name{font-family:'Cinzel',serif;font-size:14px;color:var(--cream);
+  font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-role{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;margin-top:3px}
+.cc-role.dm{color:var(--gold-d)}
+.cc-role.player{color:#4a8a4a}
+.cc-desc{font-size:13px;color:var(--cream-m);margin-bottom:12px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cc-footer{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.cc-code{font-family:'Cinzel',serif;font-size:10px;color:var(--border-h);letter-spacing:2px}
+.cc-date{font-size:11px;color:var(--cream-m)}
+.cc-actions{display:flex;gap:6px;margin-top:10px}
+
+/* New campaign card */
+.campaign-card.new-card{border-style:dashed;border-color:var(--border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:160px;color:var(--cream-m);gap:10px}
+.campaign-card.new-card:hover{border-color:var(--gold-d);color:var(--gold)}
+.new-card-icon{font-size:32px;opacity:.6}
+.new-card-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:1px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;
+  display:none;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:28px;width:100%;max-width:480px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.modal-title{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);
+  letter-spacing:1px;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.modal-actions{display:flex;gap:8px;margin-top:20px}
+
+/* Join section */
+.join-section{background:var(--bg2);border:1px solid var(--border);border-radius:4px;
+  padding:20px;margin-bottom:40px}
+.join-row{display:flex;gap:10px;align-items:flex-end}
+.join-row .form-group{flex:1;margin-bottom:0}
+.join-row .btn{flex-shrink:0;white-space:nowrap}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--gold-d);color:var(--ink);padding:10px 20px;border-radius:3px;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.5px;z-index:200;
+  opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.char-card{background:var(--bg2);border:1px solid rgba(124,58,237,.3);border-radius:4px;
+  padding:18px;cursor:pointer;transition:all .2s;position:relative}
+.char-card:hover{border-color:rgba(168,85,247,.6);transform:translateY(-2px)}
+.char-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(168,85,247,.5),transparent);opacity:0;transition:opacity .2s}
+.char-card:hover::before{opacity:1}
+.char-name{font-family:'Cinzel',serif;font-size:15px;color:var(--cream);font-weight:600;margin-bottom:3px}
+.char-sub{font-family:'Cinzel',serif;font-size:9px;color:rgba(168,85,247,.8);letter-spacing:.5px;margin-bottom:10px}
+.char-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.char-stat{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:5px;text-align:center}
+.char-stat-val{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);font-weight:700}
+.char-stat-name{font-family:'Cinzel',serif;font-size:7px;color:var(--cream-m);letter-spacing:.5px}
+
+/* Loading spinner */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,162,39,0.3);
+  border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--cream-m)}
+.empty-state .big{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:16px;font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- ════════ AUTH PAGE ════════ -->
+<div class="page active" id="page-auth">
+  <div class="auth-bg">
+    <div class="auth-box">
+      <div class="auth-logo">
+        <span class="emblem">⚔️</span>
+        <h1>Crónicas de Mazmorra</h1>
+        <p>D&amp;D 5e · Sistema de Campaña</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">Crear cuenta</div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="auth-login">
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <input class="input" id="login-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <span class="forgot-link" onclick="showReset()">¿Olvidaste tu contraseña?</span>
+        <div class="error-msg" id="login-error"></div>
+        <button class="btn full" id="login-btn" onclick="doLogin()">Entrar a la aventura →</button>
+
+        <div class="auth-divider">o</div>
+        <p style="text-align:center;font-size:13px;color:var(--cream-m)">
+          ¿Sin cuenta? <span style="color:var(--gold-d);cursor:pointer;text-decoration:underline" onclick="switchAuthTab('register')">Regístrate gratis</span>
+        </p>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="auth-register" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Nombre de aventurero</label>
+          <input class="input" id="reg-name" type="text" placeholder="Gandalf el Gris" autocomplete="nickname">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <input class="input" id="reg-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña (mín. 6 caracteres)</label>
+          <input class="input" id="reg-pass" type="password" placeholder="••••••••" autocomplete="new-password"
+            onkeydown="if(event.key==='Enter') doRegister()">
+        </div>
+        <div class="error-msg" id="reg-error"></div>
+        <div class="success-msg" id="reg-success"></div>
+        <button class="btn full" id="reg-btn" onclick="doRegister()">Crear cuenta →</button>
+      </div>
+
+      <!-- RESET FORM -->
+      <div id="auth-reset" style="display:none">
+        <p style="font-size:14px;color:var(--cream-d);margin-bottom:16px">
+          Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <input class="input" id="reset-email" type="email" placeholder="tu@correo.com">
+        </div>
+        <div class="error-msg" id="reset-error"></div>
+        <div class="success-msg" id="reset-success"></div>
+        <button class="btn full" onclick="doReset()">Enviar enlace →</button>
+        <div style="text-align:center;margin-top:12px">
+          <span style="font-size:13px;color:var(--cream-m);cursor:pointer;text-decoration:underline" onclick="switchAuthTab('login')">← Volver al login</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════ DASHBOARD ════════ -->
+<div class="page" id="page-dashboard">
+
+  <header class="dash-header">
+    <div class="dash-logo">⚔ Crónicas de Mazmorra</div>
+    <div class="dash-user">Bienvenido, <span id="user-display-name">Aventurero</span></div>
+    <button class="btn secondary" onclick="doLogout()" style="font-size:9px;padding:7px 14px">Cerrar sesión</button>
+  </header>
+
+  <div class="dash-body">
+
+    <!-- MIS CAMPAÑAS (DM) -->
+    <div class="dash-section-title">
+      👑 Mis Campañas <span style="color:var(--border-h);font-weight:normal">(como DM)</span>
+    </div>
+    <div class="campaign-grid" id="dm-campaigns">
+      <div style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+
+    <!-- MIS PERSONAJES -->
+    <div class="dash-section-title">
+      🧙 Mis Personajes <span style="color:var(--border-h);font-weight:normal">(sin campaña asignada o pre-creados)</span>
+    </div>
+    <div class="campaign-grid" id="my-characters" style="margin-bottom:40px">
+      <div style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+
+    <!-- UNIRSE A CAMPAÑA -->
+    <div class="dash-section-title">🔑 Unirse a una campaña</div>
+    <div class="join-section">
+      <p style="font-size:14px;color:var(--cream-m);margin-bottom:14px">
+        Si el DM te dio un código de campaña, ingrésalo aquí para unirte como jugador.
+      </p>
+      <div class="join-row">
+        <div class="form-group">
+          <label class="form-label">Código de campaña</label>
+          <input class="input" id="join-code" placeholder="XXXXXX" style="text-transform:uppercase;letter-spacing:3px;font-family:'Cinzel',serif"
+            maxlength="6" onkeydown="if(event.key==='Enter') doJoinCampaign()">
+        </div>
+        <button class="btn" onclick="doJoinCampaign()">Unirse →</button>
+      </div>
+      <div class="error-msg" id="join-error"></div>
+    </div>
+
+    <!-- CAMPAÑAS COMO JUGADOR -->
+    <div class="dash-section-title">
+      🛡 Campañas donde soy jugador
+    </div>
+    <div class="campaign-grid" id="player-campaigns">
+      <div style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════ MODAL: Nueva campaña ════════ -->
+<div class="modal-overlay" id="modal-new-campaign">
+  <div class="modal-box">
+    <div class="modal-title">✨ Nueva campaña</div>
+    <div class="form-group">
+      <label class="form-label">Nombre de la campaña</label>
+      <input class="input" id="new-camp-name" placeholder="La Maldición de Strahd" maxlength="60">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción breve (opcional)</label>
+      <input class="input" id="new-camp-desc" placeholder="Una aventura de horror gótico..." maxlength="120">
+    </div>
+    <div class="error-msg" id="new-camp-error"></div>
+    <div class="modal-actions">
+      <button class="btn" id="new-camp-btn" onclick="createCampaign()" style="flex:1">Crear campaña →</button>
+      <button class="btn secondary" onclick="closeModal('modal-new-campaign')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL: Confirmar eliminar ════════ -->
+<div class="modal-overlay" id="modal-confirm-delete">
+  <div class="modal-box">
+    <div class="modal-title">⚠ Eliminar campaña</div>
+    <p style="font-size:15px;color:var(--cream-d);margin-bottom:8px">
+      ¿Estás seguro de que deseas eliminar <strong id="del-camp-name" style="color:var(--cream)"></strong>?
+    </p>
+    <p style="font-size:13px;color:#e07070">Esta acción eliminará todos los personajes, combatientes, tienda, lore y tokens asociados. No se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn danger" onclick="confirmDeleteCampaign()" style="flex:1">Sí, eliminar</button>
+      <button class="btn secondary" onclick="closeModal('modal-confirm-delete')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const SUPABASE_URL = 'https://dgbgdymdtdhajztqdedb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmdkeW1kdGRoYWp6dHFkZWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODQwODksImV4cCI6MjA5ODM2MDA4OX0.iHsEAVVlxD5DxuHgHKHBPJKuPy73k98c8UkHF8hodZg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentUser  = null;
+let dmCampaigns  = [];
+let plCampaigns  = [];
+let deletingId   = null;
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+let _toastTimer;
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+}
+function setErr(id, msg) { document.getElementById(id).textContent = msg; }
+function clearErr(id)    { document.getElementById(id).textContent = ''; }
+
+function fmtDate(d) {
+  if(!d) return '';
+  return new Date(d).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric'});
+}
+
+function genCode() {
+  return Math.random().toString(36).slice(2,8).toUpperCase();
+}
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('auth-login').style.display    = tab==='login'    ? 'block' : 'none';
+  document.getElementById('auth-register').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('auth-reset').style.display    = 'none';
+}
+
+function showReset() {
+  document.getElementById('auth-login').style.display    = 'none';
+  document.getElementById('auth-register').style.display = 'none';
+  document.getElementById('auth-reset').style.display    = 'block';
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  clearErr('login-error');
+  if(!email || !pass) { setErr('login-error', 'Completa todos los campos.'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Entrando...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Entrar a la aventura →';
+  if(error) { setErr('login-error', translateError(error.message)); return; }
+  currentUser = data.user;
+  enterDashboard();
+}
+
+async function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  clearErr('reg-error');
+  document.getElementById('reg-success').textContent = '';
+  if(!name||!email||!pass) { setErr('reg-error', 'Completa todos los campos.'); return; }
+  if(pass.length < 6) { setErr('reg-error', 'La contraseña debe tener al menos 6 caracteres.'); return; }
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creando cuenta...';
+  const { data, error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { display_name: name } }
+  });
+  btn.disabled = false; btn.textContent = 'Crear cuenta →';
+  if(error) { setErr('reg-error', translateError(error.message)); return; }
+  if(data.user && !data.session) {
+    // Email confirmation required
+    document.getElementById('reg-success').textContent = '✓ Revisa tu correo para confirmar tu cuenta.';
+  } else if(data.session) {
+    currentUser = data.user;
+    enterDashboard();
+  }
+}
+
+async function doReset() {
+  const email = document.getElementById('reset-email').value.trim();
+  clearErr('reset-error');
+  document.getElementById('reset-success').textContent = '';
+  if(!email) { setErr('reset-error', 'Ingresa tu correo.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+  if(error) { setErr('reset-error', translateError(error.message)); return; }
+  document.getElementById('reset-success').textContent = '✓ Enlace enviado. Revisa tu correo.';
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  showPage('page-auth');
+  switchAuthTab('login');
+}
+
+function translateError(msg) {
+  if(msg.includes('Invalid login')) return 'Correo o contraseña incorrectos.';
+  if(msg.includes('Email not confirmed')) return 'Confirma tu correo antes de entrar.';
+  if(msg.includes('User already registered')) return 'Ya existe una cuenta con ese correo.';
+  if(msg.includes('Password should be')) return 'La contraseña debe tener al menos 6 caracteres.';
+  return msg;
+}
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+async function enterDashboard() {
+  const name = currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'Aventurero';
+  document.getElementById('user-display-name').textContent = name;
+  showPage('page-dashboard');
+  await loadCampaigns();
+  await loadCharacters();
+}
+
+async function loadCharacters() {
+  if(!currentUser) return;
+  const {data:chars} = await sb.from('characters')
+    .select('*').eq('user_id', currentUser.id).is('campaign_id', null)
+    .order('created_at', {ascending:false});
+  renderCharacters(chars||[]);
+}
+
+function renderCharacters(chars) {
+  const el = document.getElementById('my-characters');
+  if(!el) return;
+  let html = `<div class="campaign-card new-card" onclick="window.location.href='character_creator.html'">
+    <div class="new-card-icon">✨</div>
+    <div class="new-card-label">Crear personaje</div>
+  </div>`;
+  if(!chars.length) {
+    html += `<div class="campaign-card" style="border:none;background:transparent;cursor:default;display:flex;align-items:center">
+      <p style="font-size:14px;color:var(--cream-m);font-style:italic">Sin personajes. ¡Crea tu primer aventurero!</p>
+    </div>`;
+  } else {
+    html += chars.map(c=>`
+      <div class="char-card">
+        <div class="char-name">${c.nombre}</div>
+        <div class="char-sub">${(c.raza||'')} · ${(c.clase||'')} · Nivel ${c.nivel||1}</div>
+        <div class="char-stats">
+          <div class="char-stat"><div class="char-stat-val">${c.hp_max||'?'}</div><div class="char-stat-name">HP</div></div>
+          <div class="char-stat"><div class="char-stat-val">${c.ca||10}</div><div class="char-stat-name">CA</div></div>
+          <div class="char-stat"><div class="char-stat-val">${c.nivel||1}</div><div class="char-stat-name">NIV</div></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn" style="flex:1;font-size:9px;padding:6px" onclick="window.location.href='character_creator.html?edit=${c.id}'">✏ Editar</button>
+          <button class="btn danger" style="font-size:9px;padding:6px" onclick="deleteChar('${c.id}','${(c.nombre||'').replace(/'/g,"\\'")}')">🗑</button>
+        </div>
+        ${c.campaign_id?'':`<div style="font-size:10px;color:rgba(168,85,247,.6);font-family:'Cinzel',serif;margin-top:8px;letter-spacing:.5px">Sin campaña asignada</div>`}
+      </div>`).join('');
+  }
+  el.innerHTML = html;
+}
+
+async function deleteChar(id, name) {
+  if(!confirm('¿Eliminar a '+name+'?')) return;
+  await sb.from('characters').delete().eq('id', id);
+  loadCharacters();
+}
+
+async function loadCampaigns() {
+  // Load DM campaigns (owned)
+  const { data: owned } = await sb.from('campaigns')
+    .select('*').eq('owner_id', currentUser.id).order('last_played', { ascending: false });
+  dmCampaigns = owned || [];
+
+  // Load player campaigns (member of, not owner)
+  const { data: memberships } = await sb.from('campaign_members')
+    .select('*, campaigns(*)')
+    .eq('user_id', currentUser.id)
+    .eq('role', 'player');
+  plCampaigns = (memberships || []).map(m => m.campaigns).filter(Boolean);
+
+  renderDMCampaigns();
+  renderPlayerCampaigns();
+}
+
+function renderDMCampaigns() {
+  const el = document.getElementById('dm-campaigns');
+  let html = '';
+
+  // New campaign card
+  html += `<div class="campaign-card new-card" onclick="openModal('modal-new-campaign')">
+    <div class="new-card-icon">✨</div>
+    <div class="new-card-label">Nueva campaña</div>
+  </div>`;
+
+  if(!dmCampaigns.length) {
+    html += `<div class="campaign-card" style="border-style:none;background:transparent;display:flex;align-items:center;cursor:default">
+      <p style="font-size:14px;color:var(--cream-m);font-style:italic">Aún no tienes campañas. ¡Crea la primera!</p>
+    </div>`;
+  } else {
+    html += dmCampaigns.map(c => `
+      <div class="campaign-card" onclick="enterCampaignAsDM('${c.id}','${c.code}')">
+        <div class="cc-header">
+          <div class="cc-icon">⚔️</div>
+          <div class="cc-info">
+            <div class="cc-name">${c.name||c.code}</div>
+            <div class="cc-role dm">👑 DUNGEON MASTER</div>
+          </div>
+        </div>
+        <div class="cc-desc">${c.description||'Sin descripción'}</div>
+        <div class="cc-footer">
+          <span class="cc-code">📋 ${c.code}</span>
+          <span class="cc-date">${fmtDate(c.last_played||c.created_at)}</span>
+        </div>
+        <div class="cc-actions" onclick="event.stopPropagation()">
+          <button class="btn" style="flex:1;font-size:9px;padding:6px" onclick="enterCampaignAsDM('${c.id}','${c.code}')">▶ Abrir DM Screen</button>
+          <button class="btn secondary" style="font-size:9px;padding:6px" onclick="copyCampaignCode('${c.code}')">📋 Código</button>
+          <button class="btn danger" style="font-size:9px;padding:6px" onclick="promptDelete('${c.id}','${(c.name||c.code).replace(/'/g,"\\'")}')">🗑</button>
+        </div>
+      </div>`).join('');
+  }
+
+  el.innerHTML = html;
+}
+
+function renderPlayerCampaigns() {
+  const el = document.getElementById('player-campaigns');
+  if(!plCampaigns.length) {
+    el.innerHTML = `<div style="grid-column:1/-1">
+      <div class="empty-state">
+        <div class="big">🛡</div>
+        <p>No estás en ninguna campaña como jugador aún.</p>
+        <p style="font-size:13px;margin-top:6px">Usa el código de tu DM para unirte.</p>
+      </div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = plCampaigns.map(c => `
+    <div class="campaign-card as-player" onclick="enterCampaignAsPlayer('${c.id}','${c.code}')">
+      <div class="cc-header">
+        <div class="cc-icon">🛡</div>
+        <div class="cc-info">
+          <div class="cc-name">${c.name||c.code}</div>
+          <div class="cc-role player">🛡 JUGADOR</div>
+        </div>
+      </div>
+      <div class="cc-desc">${c.description||'Sin descripción'}</div>
+      <div class="cc-footer">
+        <span class="cc-code">📋 ${c.code}</span>
+        <span class="cc-date">${fmtDate(c.last_played||c.created_at)}</span>
+      </div>
+      <div class="cc-actions" onclick="event.stopPropagation()">
+        <button class="btn" style="flex:1;font-size:9px;padding:6px;background:#1a4a1a;border-color:#3a8a3a" onclick="enterCampaignAsPlayer('${c.id}','${c.code}')">▶ Abrir Player Screen</button>
+        <button class="btn danger" style="font-size:9px;padding:6px" onclick="leavePlayerCampaign('${c.id}')">Salir</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// CAMPAIGN ACTIONS
+// ═══════════════════════════════════════════
+async function createCampaign() {
+  const name = document.getElementById('new-camp-name').value.trim();
+  const desc = document.getElementById('new-camp-desc').value.trim();
+  clearErr('new-camp-error');
+  if(!name) { setErr('new-camp-error', 'Ponle un nombre a la campaña.'); return; }
+
+  const btn = document.getElementById('new-camp-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creando...';
+
+  const code = genCode();
+  const { data, error } = await sb.from('campaigns').insert({
+    code, owner_id: currentUser.id,
+    name, description: desc,
+    dm_pin: Math.floor(1000 + Math.random()*9000).toString(),
+    created_at: new Date().toISOString(),
+    last_played: new Date().toISOString()
+  }).select().single();
+
+  btn.disabled = false; btn.textContent = 'Crear campaña →';
+  if(error) { setErr('new-camp-error', 'Error: '+error.message); return; }
+
+  // Add as DM member
+  await sb.from('campaign_members').insert({
+    campaign_id: data.id, user_id: currentUser.id, role: 'dm'
+  });
+
+  closeModal('modal-new-campaign');
+  document.getElementById('new-camp-name').value = '';
+  document.getElementById('new-camp-desc').value = '';
+  showToast('✨ Campaña "'+name+'" creada · Código: '+code);
+  await loadCampaigns();
+
+  // Go straight into the campaign
+  enterCampaignAsDM(data.id, code);
+}
+
+function enterCampaignAsDM(campaignId, code) {
+  // Save session for dm_screen to auto-login
+  sessionStorage.setItem('dm_campaign', JSON.stringify({
+    campaignId, code, userId: currentUser.id,
+    displayName: currentUser.user_metadata?.display_name || currentUser.email
+  }));
+  // Update last_played
+  sb.from('campaigns').update({last_played: new Date().toISOString()}).eq('id', campaignId);
+  window.location.href = 'dm_screen.html';
+}
+
+function enterCampaignAsPlayer(campaignId, code) {
+  sessionStorage.setItem('player_campaign', JSON.stringify({
+    campaignId, code, userId: currentUser.id,
+    displayName: currentUser.user_metadata?.display_name || currentUser.email
+  }));
+  sb.from('campaigns').update({last_played: new Date().toISOString()}).eq('id', campaignId);
+  window.location.href = 'player_screen.html';
+}
+
+async function doJoinCampaign() {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  clearErr('join-error');
+  if(code.length !== 6) { setErr('join-error', 'El código debe tener 6 caracteres.'); return; }
+
+  const { data: camp } = await sb.from('campaigns').select('*').eq('code', code).single();
+  if(!camp) { setErr('join-error', 'Campaña no encontrada. Verifica el código.'); return; }
+  if(camp.owner_id === currentUser.id) { setErr('join-error', 'Ya eres el DM de esta campaña.'); return; }
+
+  // Register as member if not already
+  const { data: existing } = await sb.from('campaign_members').select('id')
+    .eq('campaign_id', camp.id).eq('user_id', currentUser.id).maybeSingle();
+  if(!existing) {
+    await sb.from('campaign_members').insert({
+      campaign_id: camp.id, user_id: currentUser.id, role: 'player'
+    });
+    showToast('✓ Unido a "' + (camp.name||camp.code) + '"');
+    await loadCampaigns();
+  }
+
+  // Show character picker modal
+  openCharPickerModal(camp);
+}
+
+function openCharPickerModal(camp) {
+  // Build modal dynamically
+  let modal = document.getElementById('modal-char-picker');
+  if(!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-char-picker';
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `<div class="modal-box" style="max-width:520px">
+    <div class="modal-title">🛡 Entrar a "${camp.name||camp.code}"</div>
+    <p style="font-size:14px;color:var(--cream-d);margin-bottom:14px">
+      Selecciona el personaje con el que quieres unirte a esta campaña.
+    </p>
+    <div id="char-picker-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:14px">
+      <div style="text-align:center;padding:20px"><div class="spinner"></div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="character_creator.html" class="btn" style="flex:1;justify-content:center;text-decoration:none">+ Crear personaje</a>
+      <button class="btn secondary" onclick="closeModal('modal-char-picker')">Cancelar</button>
+    </div>
+  </div>`;
+  modal.classList.add('open');
+
+  // Load user's characters
+  sb.from('characters').select('*').eq('user_id', currentUser.id)
+    .order('created_at', {ascending:false})
+    .then(({data:chars}) => {
+      const el = document.getElementById('char-picker-list');
+      if(!el) return;
+      if(!chars||!chars.length) {
+        el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--cream-m);font-style:italic">
+          Sin personajes. Crea uno primero.
+        </div>`;
+        return;
+      }
+      el.innerHTML = chars.map(c => {
+        const alreadyInCamp = c.campaign_id === camp.id;
+        const clickFn = alreadyInCamp ? '' : ("pickCharForCampaign('" + c.id + "','" + camp.id + "','" + camp.code + "')");
+        const borderCol = alreadyInCamp ? 'var(--gold-d)' : 'var(--border)';
+        const hpMax = c.hp_max || '?';
+        const ca = c.ca || 10;
+        const nivel = c.nivel || 1;
+        const raza = c.raza || '';
+        const clase = c.clase ? '· ' + c.clase : '';
+        const nombre = c.nombre;
+        const alreadyBadge = alreadyInCamp
+          ? "<div style=\"font-family:'Cinzel',serif;font-size:8px;color:var(--gold-d);margin-top:4px;letter-spacing:.5px\">✓ YA EN ESTA CAMPAÑA</div>"
+          : '';
+        const arrow = alreadyInCamp ? '' : "<div style=\"color:var(--cream-m);font-size:18px;flex-shrink:0\">→</div>";
+        return '<div onclick=\"' + clickFn + '\"'
+          + ' style=\"background:var(--bg3);border:1px solid ' + borderCol + ';border-radius:3px;padding:12px 14px;'
+          + 'cursor:' + (alreadyInCamp?'default':'pointer') + ';display:flex;align-items:center;gap:12px;transition:border-color .15s\"'
+          + ' onmouseover=\"this.style.borderColor=&quot;var(--gold-d)&quot;\"'
+          + ' onmouseout=\"this.style.borderColor=&quot;' + borderCol + '&quot;\">'
+          + '<div style=\"flex:1\">'
+          + '<div style=\"font-family:Cinzel,serif;font-size:13px;color:var(--cream)\">' + nombre + '</div>'
+          + '<div style=\"font-size:11px;color:var(--cream-m);margin-top:2px\">' + raza + ' ' + clase + ' · Nivel ' + nivel + '</div>'
+          + alreadyBadge
+          + '</div>'
+          + '<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:4px;flex-shrink:0\">'
+          + '<div style=\"text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:4px 6px\">'
+          + '<div style=\"font-family:Cinzel,serif;font-size:13px;color:var(--gold)\">' + hpMax + '</div>'
+          + '<div style=\"font-family:Cinzel,serif;font-size:7px;color:var(--cream-m)\">HP</div>'
+          + '</div>'
+          + '<div style=\"text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:4px 6px\">'
+          + '<div style=\"font-family:Cinzel,serif;font-size:13px;color:var(--gold)\">' + ca + '</div>'
+          + '<div style=\"font-family:Cinzel,serif;font-size:7px;color:var(--cream-m)\">CA</div>'
+          + '</div></div>'
+          + arrow
+          + '</div>';
+      }).join('');
+    });
+}
+
+async function pickCharForCampaign(charId, campId, campCode) {
+  // Assign character to campaign
+  await sb.from('characters').update({campaign_id: campId}).eq('id', charId);
+  closeModal('modal-char-picker');
+  showToast('✓ Personaje asignado a la campaña');
+  await loadCharacters();
+  // Enter as player
+  enterCampaignAsPlayer(campId, campCode);
+}
+
+function copyCampaignCode(code) {
+  navigator.clipboard.writeText(code).then(() => showToast('Código '+code+' copiado ✓'));
+}
+
+function promptDelete(id, name) {
+  deletingId = id;
+  document.getElementById('del-camp-name').textContent = name;
+  openModal('modal-confirm-delete');
+}
+
+async function confirmDeleteCampaign() {
+  if(!deletingId) return;
+  closeModal('modal-confirm-delete');
+  // Cascade delete (Supabase on delete cascade handles children)
+  await sb.from('campaigns').delete().eq('id', deletingId);
+  deletingId = null;
+  showToast('Campaña eliminada.');
+  await loadCampaigns();
+}
+
+async function leavePlayerCampaign(campId) {
+  if(!confirm('¿Salir de esta campaña?')) return;
+  await sb.from('campaign_members').delete()
+    .eq('campaign_id', campId).eq('user_id', currentUser.id);
+  showToast('Has salido de la campaña.');
+  await loadCampaigns();
+}
+
+// ═══════════════════════════════════════════
+// INIT — check existing session
+// ═══════════════════════════════════════════
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if(session?.user) {
+    currentUser = session.user;
+    enterDashboard();
+  }
+
+  // Listen for auth changes (e.g. password reset redirect)
+  sb.auth.onAuthStateChange((event, session) => {
+    if(event === 'SIGNED_IN' && session?.user) {
+      currentUser = session.user;
+      enterDashboard();
+    }
+    if(event === 'SIGNED_OUT') {
+      currentUser = null;
+      showPage('page-auth');
+    }
+  });
+})();
+</script>
+</body>
+</html>

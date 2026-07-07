@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear Personaje — D&D 5e</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08060f;--bg2:#0f0c1a;--bg3:#161228;
+  --border:#2a2040;--border-h:#5a3a8a;
+  --gold:#c9a227;--gold-d:#8a6f1a;--gold-b:#f0c840;
+  --purple:#7c3aed;--purple-b:#a855f7;--purple-d:#4c1d95;
+  --red:#8b1a1a;--red-b:#c0392b;
+  --green:#166534;--green-b:#22c55e;
+  --cream:#f0e6c8;--cream-d:#c4b08a;--cream-m:#8a7a5a;
+  --ink:#08060f;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Crimson Text',Georgia,serif;background:var(--bg);color:var(--cream);min-height:100vh}
+
+/* ── Inputs ── */
+.input,.select,.textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border-h);
+  color:var(--cream);padding:10px 13px;font-family:'Crimson Text',serif;
+  font-size:15px;border-radius:3px;outline:none;transition:border-color .2s}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--purple-b)}
+.input::placeholder{color:var(--cream-m)}
+.select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a7a5a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.select option{background:var(--bg2)}
+.textarea{resize:vertical;min-height:80px;font-size:14px;line-height:1.5}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;color:var(--cream-m)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ── Buttons ── */
+.btn{background:var(--purple-d);color:var(--cream);border:1px solid var(--purple-b);
+  padding:10px 20px;cursor:pointer;font-family:'Cinzel',serif;font-size:11px;
+  letter-spacing:.5px;border-radius:3px;transition:background .2s;
+  display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn:hover{background:var(--purple)}
+.btn.gold{background:var(--gold-d);color:var(--ink);border-color:var(--gold)}
+.btn.gold:hover{background:var(--gold)}
+.btn.secondary{background:var(--bg3);color:var(--cream-d);border-color:var(--border-h)}
+.btn.secondary:hover{border-color:var(--purple-b);color:var(--cream)}
+.btn.danger{background:rgba(139,26,26,.3);color:#e07070;border-color:var(--red)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.full{width:100%}
+
+/* ── Layout ── */
+.page-header{
+  background:linear-gradient(180deg,var(--bg2),transparent);
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;gap:16px}
+.page-title{font-family:'Cinzel Decorative',serif;font-size:16px;
+  background:linear-gradient(135deg,var(--purple-b),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex:1}
+
+/* ── Wizard steps ── */
+.wizard{max-width:900px;margin:0 auto;padding:28px 20px 80px}
+
+.steps-bar{display:flex;gap:0;margin-bottom:36px;position:relative}
+.steps-bar::before{content:'';position:absolute;top:18px;left:0;right:0;height:2px;
+  background:var(--border);z-index:0}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+  position:relative;z-index:1;cursor:pointer}
+.step-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);
+  background:var(--bg2);display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:12px;color:var(--cream-m);transition:all .3s}
+.step-item.done .step-circle{border-color:var(--purple-b);background:var(--purple-d);color:var(--cream)}
+.step-item.active .step-circle{border-color:var(--gold);background:rgba(201,162,39,.15);
+  color:var(--gold);box-shadow:0 0 12px rgba(201,162,39,.3)}
+.step-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.5px;
+  color:var(--cream-m);text-align:center;max-width:70px}
+.step-item.active .step-label{color:var(--gold)}
+.step-item.done .step-label{color:var(--purple-b)}
+
+/* ── Step panels ── */
+.step-panel{display:none}
+.step-panel.active{display:block}
+.step-title{font-family:'Cinzel Decorative',serif;font-size:20px;
+  background:linear-gradient(135deg,var(--purple-b),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:6px}
+.step-subtitle{font-size:15px;color:var(--cream-m);margin-bottom:24px;font-style:italic}
+
+/* ── Card grids (race/class/bg selection) ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;
+  margin-bottom:20px;max-height:360px;overflow-y:auto;padding-right:4px;
+  scrollbar-width:thin;scrollbar-color:var(--border-h) var(--bg2)}
+.sel-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;
+  padding:14px 12px;cursor:pointer;transition:all .15s;position:relative}
+.sel-card:hover{border-color:var(--border-h);background:var(--bg3)}
+.sel-card.selected{border-color:var(--gold);background:rgba(201,162,39,.08);
+  box-shadow:0 0 0 1px rgba(201,162,39,.2)}
+.sel-card.selected::before{content:'✓';position:absolute;top:6px;right:8px;
+  font-size:11px;color:var(--gold)}
+.sel-card-name{font-family:'Cinzel',serif;font-size:12px;color:var(--cream);margin-bottom:4px}
+.sel-card-sub{font-size:11px;color:var(--cream-m);line-height:1.3}
+.sel-card-badge{font-family:'Cinzel',serif;font-size:9px;color:var(--purple-b);
+  margin-top:6px;letter-spacing:.5px}
+
+/* ── Detail panel ── */
+.detail-panel{background:var(--bg2);border:1px solid var(--border);border-radius:3px;
+  padding:18px;margin-bottom:20px;min-height:120px}
+.detail-panel h3{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:10px}
+.detail-panel p{font-size:13px;color:var(--cream-d);line-height:1.6;margin-bottom:8px}
+.trait-list{display:flex;flex-direction:column;gap:8px}
+.trait-item h4{font-family:'Cinzel',serif;font-size:11px;color:var(--cream);margin-bottom:3px}
+.trait-item p{font-size:12px;color:var(--cream-m);line-height:1.5}
+.bonus-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5px;
+  padding:3px 8px;border-radius:2px;border:1px solid}
+.chip-gold{border-color:var(--gold-d);color:var(--gold);background:rgba(201,162,39,.08)}
+.chip-purple{border-color:var(--purple);color:var(--purple-b);background:rgba(124,58,237,.08)}
+.chip-green{border-color:var(--green);color:var(--green-b);background:rgba(34,197,94,.06)}
+.chip-red{border-color:var(--red);color:#e07070;background:rgba(139,26,26,.1)}
+
+/* ── Stats ── */
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:3px;
+  padding:10px 6px;text-align:center;position:relative}
+.stat-name{font-family:'Cinzel',serif;font-size:9px;color:var(--cream-m);letter-spacing:.5px;margin-bottom:6px}
+.stat-input{width:48px;background:var(--bg3);border:1px solid var(--border-h);
+  color:var(--gold);text-align:center;font-family:'Cinzel',serif;font-size:20px;
+  font-weight:700;border-radius:2px;outline:none;padding:4px}
+.stat-input:focus{border-color:var(--gold)}
+.stat-mod{font-size:11px;color:var(--purple-b);margin-top:5px}
+.stat-racial{font-size:9px;color:var(--green-b);margin-top:2px}
+.stat-total{font-family:'Cinzel',serif;font-size:18px;color:var(--gold-b);
+  font-weight:700;margin-top:4px}
+
+.roll-methods{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.method-btn{background:var(--bg3);border:1px solid var(--border);color:var(--cream-d);
+  padding:7px 14px;cursor:pointer;font-family:'Cinzel',serif;font-size:10px;
+  letter-spacing:.5px;border-radius:2px;transition:all .15s}
+.method-btn.active{border-color:var(--purple-b);color:var(--purple-b);background:rgba(124,58,237,.1)}
+.method-btn:hover{border-color:var(--border-h);color:var(--cream)}
+
+.roll-result{background:var(--bg3);border:1px solid var(--border);border-radius:3px;
+  padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.roll-set{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.roll-chip{background:var(--bg2);border:1px solid var(--border-h);
+  padding:6px 12px;border-radius:2px;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:14px;color:var(--gold);
+  transition:all .15s;user-select:none}
+.roll-chip:hover{border-color:var(--gold);background:rgba(201,162,39,.1)}
+.roll-chip.used{opacity:.3;cursor:default;border-color:var(--border)}
+.point-buy-total{font-family:'Cinzel',serif;font-size:13px;color:var(--purple-b)}
+
+/* ── Skills ── */
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.skill-row{display:flex;align-items:center;gap:8px;padding:6px 8px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:2px;
+  cursor:pointer;transition:border-color .15s}
+.skill-row:hover{border-color:var(--border-h)}
+.skill-row.selected{border-color:var(--green-b);background:rgba(34,197,94,.05)}
+.skill-row.locked{cursor:default;border-color:var(--purple-d);background:rgba(76,29,149,.1)}
+.skill-check{width:14px;height:14px;accent-color:var(--green-b);cursor:pointer;flex-shrink:0}
+.skill-name{font-size:13px;color:var(--cream);flex:1}
+.skill-stat{font-family:'Cinzel',serif;font-size:9px;color:var(--cream-m)}
+.skill-mod{font-family:'Cinzel',serif;font-size:12px;color:var(--purple-b);min-width:28px;text-align:right}
+
+/* ── Character sheet preview ── */
+.preview-card{
+  background:var(--bg2);border:2px solid var(--border-h);border-radius:4px;
+  padding:24px;position:sticky;top:80px}
+.preview-name{font-family:'Cinzel Decorative',serif;font-size:18px;
+  background:linear-gradient(135deg,var(--purple-b),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:4px}
+.preview-class{font-family:'Cinzel',serif;font-size:10px;color:var(--cream-m);
+  letter-spacing:1px;margin-bottom:14px}
+.preview-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.preview-stat{background:var(--bg3);border:1px solid var(--border);
+  border-radius:2px;padding:6px;text-align:center}
+.preview-stat-val{font-family:'Cinzel',serif;font-size:16px;color:var(--gold);font-weight:700}
+.preview-stat-mod{font-size:10px;color:var(--purple-b);margin-top:1px}
+.preview-stat-name{font-family:'Cinzel',serif;font-size:8px;color:var(--cream-m);letter-spacing:.5px}
+.preview-row{display:flex;justify-content:space-between;font-size:13px;
+  padding:5px 0;border-bottom:1px solid rgba(42,32,64,.5);color:var(--cream-d)}
+.preview-row .label{font-family:'Cinzel',serif;font-size:9px;color:var(--cream-m);letter-spacing:.5px}
+.preview-row .val{color:var(--cream);font-weight:600}
+
+/* ── Navigation ── */
+.wizard-nav{display:flex;gap:10px;margin-top:28px;justify-content:space-between;
+  position:sticky;bottom:0;background:var(--bg);padding:14px 0;
+  border-top:1px solid var(--border);z-index:20}
+
+/* ── Alignment grid ── */
+.align-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:360px}
+.align-btn{background:var(--bg2);border:1px solid var(--border);border-radius:3px;
+  padding:8px 6px;text-align:center;cursor:pointer;font-size:12px;color:var(--cream-d);
+  transition:all .15s}
+.align-btn:hover{border-color:var(--border-h)}
+.align-btn.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,162,39,.08)}
+
+/* ── Misc ── */
+.error-msg{color:#e07070;font-size:13px;min-height:16px}
+.success-msg{color:var(--green-b);font-size:13px}
+.hint{font-size:12px;color:var(--cream-m);font-style:italic;margin-top:4px}
+.section-divider{height:1px;background:var(--border);margin:20px 0}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(168,85,247,.3);
+  border-top-color:var(--purple-b);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.two-col{display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start}
+@media(max-width:700px){
+  .two-col{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .form-row,.form-row-3{grid-template-columns:1fr}
+  .skills-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="page-title">⚔ Crear Personaje</div>
+  <button class="btn secondary" onclick="goBack()" style="font-size:9px;padding:6px 14px">← Volver</button>
+</header>
+
+<div class="wizard">
+
+  <!-- STEP BAR -->
+  <div class="steps-bar" id="steps-bar">
+    <div class="step-item active" onclick="goStep(1)"><div class="step-circle">1</div><div class="step-label">Concepto</div></div>
+    <div class="step-item" onclick="goStep(2)"><div class="step-circle">2</div><div class="step-label">Raza</div></div>
+    <div class="step-item" onclick="goStep(3)"><div class="step-circle">3</div><div class="step-label">Clase</div></div>
+    <div class="step-item" onclick="goStep(4)"><div class="step-circle">4</div><div class="step-label">Trasfondo</div></div>
+    <div class="step-item" onclick="goStep(5)"><div class="step-circle">5</div><div class="step-label">Atributos</div></div>
+    <div class="step-item" onclick="goStep(6)"><div class="step-circle">6</div><div class="step-label">Pericias</div></div>
+    <div class="step-item" onclick="goStep(7)"><div class="step-circle">7</div><div class="step-label">Resumen</div></div>
+  </div>
+
+  <!-- ═══════════════ STEP 1: CONCEPT ═══════════════ -->
+  <div class="step-panel active" id="step-1">
+    <div class="two-col">
+      <div>
+        <div class="step-title">El Aventurero</div>
+        <div class="step-subtitle">Dale vida a tu personaje con un nombre y una historia.</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre del personaje *</label>
+            <input class="input" id="pc-name" placeholder="Aragorn, Lyra, Zephyr..." maxlength="40">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nivel inicial</label>
+            <select class="select" id="pc-level">
+              <option value="1" selected>1 — Novato</option>
+              <option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option>
+              <option value="6">6</option><option value="7">7</option>
+              <option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option>
+              <option value="12">12</option><option value="13">13</option>
+              <option value="14">14</option><option value="15">15</option>
+              <option value="16">16</option><option value="17">17</option>
+              <option value="18">18</option><option value="19">19</option>
+              <option value="20">20 — Legendario</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Alineamiento</label>
+          <div class="align-grid">
+            <div class="align-btn" onclick="setAlign('Lawful Good')" data-align="Lawful Good">Legal Bueno</div>
+            <div class="align-btn" onclick="setAlign('Neutral Good')" data-align="Neutral Good">Neutral Bueno</div>
+            <div class="align-btn" onclick="setAlign('Chaotic Good')" data-align="Chaotic Good">Caótico Bueno</div>
+            <div class="align-btn" onclick="setAlign('Lawful Neutral')" data-align="Lawful Neutral">Legal Neutral</div>
+            <div class="align-btn selected" onclick="setAlign('True Neutral')" data-align="True Neutral">Neutral</div>
+            <div class="align-btn" onclick="setAlign('Chaotic Neutral')" data-align="Chaotic Neutral">Caótico Neutral</div>
+            <div class="align-btn" onclick="setAlign('Lawful Evil')" data-align="Lawful Evil">Legal Malvado</div>
+            <div class="align-btn" onclick="setAlign('Neutral Evil')" data-align="Neutral Evil">Neutral Malvado</div>
+            <div class="align-btn" onclick="setAlign('Chaotic Evil')" data-align="Chaotic Evil">Caótico Malvado</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Edad</label>
+            <input class="input" id="pc-age" type="number" min="1" max="1000" placeholder="25">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Género / pronombre</label>
+            <input class="input" id="pc-gender" placeholder="ella / él / elle">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción física</label>
+          <textarea class="textarea" id="pc-appearance" placeholder="Ojos grises, cabello oscuro, cicatriz en la mejilla izquierda..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Trasfondo narrativo (historia personal)</label>
+          <textarea class="textarea" id="pc-backstory" placeholder="Cuéntanos de dónde viene tu personaje, qué lo motiva, qué secretos guarda..." style="min-height:100px"></textarea>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-card" id="preview-card">
+        <div class="preview-name" id="prev-name">Sin nombre</div>
+        <div class="preview-class" id="prev-class">— · Nivel 1</div>
+        <div class="preview-stats" id="prev-stats"></div>
+        <div class="preview-row"><span class="label">HP</span><span class="val" id="prev-hp">—</span></div>
+        <div class="preview-row"><span class="label">CA</span><span class="val" id="prev-ca">10</span></div>
+        <div class="preview-row"><span class="label">Prof.</span><span class="val" id="prev-prof">+2</span></div>
+        <div class="preview-row"><span class="label">Alineamiento</span><span class="val" id="prev-align">Neutral</span></div>
+      </div>
+    </div>
+    <div class="error-msg" id="err-1"></div>
+  </div>
+
+  <!-- ═══════════════ STEP 2: RACE ═══════════════ -->
+  <div class="step-panel" id="step-2">
+    <div class="step-title">Tu Linaje</div>
+    <div class="step-subtitle">La raza define tus rasgos innatos, bonificadores de atributo y habilidades especiales.</div>
+    <input class="input" id="race-search" placeholder="🔍 Buscar raza..." oninput="filterRaces()" style="margin-bottom:12px;max-width:360px">
+    <div class="two-col">
+      <div>
+        <div class="card-grid" id="race-grid"></div>
+      </div>
+      <div class="detail-panel" id="race-detail">
+        <p style="color:var(--cream-m);font-style:italic">Selecciona una raza para ver sus detalles.</p>
+      </div>
+    </div>
+    <div class="error-msg" id="err-2"></div>
+  </div>
+
+  <!-- ═══════════════ STEP 3: CLASS ═══════════════ -->
+  <div class="step-panel" id="step-3">
+    <div class="step-title">Tu Vocación</div>
+    <div class="step-subtitle">La clase determina tus capacidades en combate, magia y exploración.</div>
+    <div class="two-col">
+      <div>
+        <div class="card-grid" id="class-grid"></div>
+      </div>
+      <div class="detail-panel" id="class-detail">
+        <p style="color:var(--cream-m);font-style:italic">Selecciona una clase para ver sus detalles.</p>
+      </div>
+    </div>
+    <div class="error-msg" id="err-3"></div>
+  </div>
+
+  <!-- ═══════════════ STEP 4: BACKGROUND ═══════════════ -->
+  <div class="step-panel" id="step-4">
+    <div class="step-title">Tu Historia</div>
+    <div class="step-subtitle">El trasfondo refleja lo que eras antes de convertirte en aventurero.</div>
+    <input class="input" id="bg-search" placeholder="🔍 Buscar trasfondo..." oninput="filterBgs()" style="margin-bottom:12px;max-width:360px">
+    <div class="two-col">
+      <div>
+        <div class="card-grid" id="bg-grid"></div>
+      </div>
+      <div class="detail-panel" id="bg-detail">
+        <p style="color:var(--cream-m);font-style:italic">Selecciona un trasfondo para ver sus detalles.</p>
+      </div>
+    </div>
+    <div class="error-msg" id="err-4"></div>
+  </div>
+
+  <!-- ═══════════════ STEP 5: ATTRIBUTES ═══════════════ -->
+  <div class="step-panel" id="step-5">
+    <div class="step-title">Atributos</div>
+    <div class="step-subtitle">Los seis atributos definen las capacidades físicas y mentales de tu personaje.</div>
+
+    <div class="roll-methods">
+      <div class="method-btn active" onclick="setMethod('roll4d6')">🎲 Tirar 4d6</div>
+      <div class="method-btn" onclick="setMethod('standard')">📋 Array estándar</div>
+      <div class="method-btn" onclick="setMethod('pointbuy')">⚖ Compra de puntos</div>
+      <div class="method-btn" onclick="setMethod('manual')">✏ Manual</div>
+    </div>
+
+    <!-- Roll results (drag/assign) -->
+    <div id="roll-area" style="margin-bottom:16px">
+      <div class="roll-result" id="roll-result" style="display:none">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--cream-m);letter-spacing:.5px;margin-bottom:8px">VALORES TIRADOS — haz click en uno y luego en el atributo para asignar</div>
+          <div class="roll-set" id="roll-chips"></div>
+        </div>
+        <button class="btn secondary" onclick="doRoll()" style="font-size:9px;padding:7px 12px;flex-shrink:0">🎲 Volver a tirar</button>
+      </div>
+    </div>
+
+    <!-- Point buy info -->
+    <div id="pb-info" style="display:none;margin-bottom:12px">
+      <div class="roll-result">
+        <span style="font-family:'Cinzel',serif;font-size:11px;color:var(--cream-m)">PUNTOS RESTANTES:</span>
+        <span class="point-buy-total" id="pb-points">27</span>
+        <span style="font-size:12px;color:var(--cream-m)">(Rango: 8-15 antes de bonos raciales)</span>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div class="section-divider"></div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <div><span class="form-label">HP MÁXIMO</span><div style="font-family:'Cinzel',serif;font-size:22px;color:var(--gold)" id="calc-hp">—</div></div>
+      <div><span class="form-label">CA BASE</span><div style="font-family:'Cinzel',serif;font-size:22px;color:var(--gold)" id="calc-ca">10</div></div>
+      <div><span class="form-label">INICIATIVA</span><div style="font-family:'Cinzel',serif;font-size:22px;color:var(--gold)" id="calc-init">+0</div></div>
+      <div><span class="form-label">PUNTOS TOTALES</span><div style="font-family:'Cinzel',serif;font-size:22px;color:var(--purple-b)" id="calc-total">—</div></div>
+    </div>
+    <div class="error-msg" id="err-5" style="margin-top:10px"></div>
+  </div>
+
+  <!-- ═══════════════ STEP 6: SKILLS ═══════════════ -->
+  <div class="step-panel" id="step-6">
+    <div class="step-title">Pericias</div>
+    <div class="step-subtitle">Elige tus competencias de clase. Las de trasfondo ya están incluidas.</div>
+    <div id="skill-info" style="margin-bottom:14px"></div>
+    <div class="skills-grid" id="skills-grid"></div>
+    <div class="error-msg" id="err-6" style="margin-top:10px"></div>
+  </div>
+
+  <!-- ═══════════════ STEP 7: SUMMARY ═══════════════ -->
+  <div class="step-panel" id="step-7">
+    <div class="step-title">Personaje Completo</div>
+    <div class="step-subtitle">Revisa tu personaje antes de guardarlo.</div>
+    <div id="final-summary"></div>
+    <div class="error-msg" id="err-7" style="margin-top:10px"></div>
+    <div class="success-msg" id="suc-7" style="margin-top:10px"></div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="wizard-nav">
+    <button class="btn secondary" id="btn-prev" onclick="prevStep()" style="display:none">← Anterior</button>
+    <div style="flex:1"></div>
+    <button class="btn" id="btn-next" onclick="nextStep()">Siguiente →</button>
+    <button class="btn gold" id="btn-save" onclick="saveCharacter()" style="display:none">💾 Guardar personaje</button>
+  </div>
+
+</div><!-- /wizard -->
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG & DATA
+// ═══════════════════════════════════════
+const SUPABASE_URL = 'https://dgbgdymdtdhajztqdedb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmdkeW1kdGRoYWp6dHFkZWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODQwODksImV4cCI6MjA5ODM2MDA4OX0.iHsEAVVlxD5DxuHgHKHBPJKuPy73k98c8UkHF8hodZg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const CC_DATA = {"races":[{"n":"Aarakocra","sz":"M","spd":"25","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":[],"traits":[{"n":"Flight","tx":["You have a flying speed of 50 feet. To use this speed, you can't be wearing medium or heavy armor."]},{"n":"Talons","tx":["You are proficient with your unarmed strikes, which deal 1d4 slashing damage on a hit."]},{"n":"Language","tx":["You can speak, read, and write Common, Aarakocra, and Auran."]}]},{"n":"Aasimar (Fallen)","sz":"M","spd":"30","lng":"","abi":"Charisma +2, Strength +1","bonus":{"STR":1,"CHA":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Blessed with a radiant soul, your vision can easily cut through darkness. You can see in dim light w"]},{"n":"Celestial Resistance","tx":["You have resistance to necrotic damage and radiant damage."]},{"n":"Healing Hands","tx":["As an action, you can touch a creature and cause it to regain a number of hit points equal to your l"]},{"n":"Light Bearer","tx":["You know the light cantrip. Charisma is your spellcasting ability for it."]},{"n":"Languages","tx":["You can speak, read, and write Common and Celestial."]},{"n":"Necrotic Shroud","tx":["Starting at 3rd level, you can use your action to unleash the divine energy within yourself, causing"]}]},{"n":"Aasimar (Protector)","sz":"M","spd":"30","lng":"","abi":"Charisma +2, Wisdom +1","bonus":{"WIS":1,"CHA":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Blessed with a radiant soul, your vision can easily cut through darkness. You can see in dim light w"]},{"n":"Celestial Resistance","tx":["You have resistance to necrotic damage and radiant damage."]},{"n":"Healing Hands","tx":["As an action, you can touch a creature and cause it to regain a number of hit points equal to your l"]},{"n":"Light Bearer","tx":["You know the light cantrip. Charisma is your spellcasting ability for it."]},{"n":"Languages","tx":["You can speak, read, and write Common and Celestial."]},{"n":"Radiant Soul","tx":["Starting at 3rd level, you can use your action to unleash the divine energy within yourself, causing"]}]},{"n":"Aasimar (Scourge)","sz":"M","spd":"30","lng":"","abi":"Charisma +2, Constitution +1","bonus":{"CON":1,"CHA":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Blessed with a radiant soul, your vision can easily cut through darkness. You can see in dim light w"]},{"n":"Celestial Resistance","tx":["You have resistance to necrotic damage and radiant damage."]},{"n":"Healing Hands","tx":["As an action, you can touch a creature and cause it to regain a number of hit points equal to your l"]},{"n":"Light Bearer","tx":["You know the light cantrip. Charisma is your spellcasting ability for it."]},{"n":"Languages","tx":["You can speak, read, and write Common and Celestial."]},{"n":"Radiant Consumption","tx":["Starting at 3rd level, you can use your action to unleash the divine energy within yourself, causing"]}]},{"n":"Aetherborn","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":["Intimidation"],"traits":[{"n":"Ability Score Increase","tx":["Your Charisma score increases by 2, and two other ability scores of your choice increase by 1.\n \nSou"]},{"n":"Darkvision","tx":["Accustomed to the night, you have superior vision in dark and dim conditions. You can see in dim lig"]},{"n":"Born of Aether","tx":["You have resistance to necrotic damage.\n \nSource: Plane Shift: Kaladesh, p. 17"]},{"n":"Menacing","tx":["You gain proficiency in the Intimidation skill.\n \nSource: Plane Shift: Kaladesh, p. 17"]},{"n":"Languages","tx":["You can speak, read, and write Common and two other languages of your choice.\n \nSource: Plane Shift:"]},{"n":"Variant: Drain Life","tx":["You have learned the Gift of the Aetherborn.  You have a natural attack that deals 1d6 necrotic dama"]}]},{"n":"Amonkhet Minotaur","sz":"M","spd":"30","lng":"","abi":"Strength +2, Constitution +1","bonus":{"STR":2,"CON":1},"skills":["Intimidation"],"traits":[{"n":"Natural Weapon","tx":["You can use your horns as a natural weapon to make unarmed strikes. If you hit with your horns, you "]},{"n":"Menacing","tx":["You gain proficiency in the Intimidation skill.\n \nSource: Plane Shift: Amonkhet, p. 20"]},{"n":"Relentless Endurance","tx":["When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Y"]},{"n":"Savage Attacks","tx":["When you score a critical hit with a melee weapon attack, you can roll one of the weapon’s damage di"]},{"n":"Languages","tx":["You can speak, read, and write Common and Minotaur.\n \nSource: Plane Shift: Amonkhet, p. 20"]}]},{"n":"Amonkhet Naga","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Intelligence +1","bonus":{"CON":2,"INT":1},"skills":[],"traits":[{"n":"Speed Burst","tx":["By lowering your body to the ground and propelling yourself with your arms, you can move more quickl"]},{"n":"Natural Weapons","tx":["Your fanged maw and constricting serpentine body are natural weapons, which you can use to make unar"]},{"n":"Poison Immunity","tx":["You are immune to poison damage and can’t be poisoned.\n \nSource: Plane Shift: Amonkhet, p. 22"]},{"n":"Poison Affinity","tx":["You gain proficiency with the poisoner’s kit.\n \nSource: Plane Shift: Amonkhet, p. 22"]},{"n":"Languages","tx":["You can speak, read, and write Common and Naga.\n \nSource: Plane Shift: Amonkhet, p. 22"]}]},{"n":"Beasthide Shifter","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Constitution +2","bonus":{"DEX":1,"CON":2},"skills":["Athletics","Perception"],"traits":[{"n":"Darkvision","tx":["You have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you "]},{"n":"Keen Senses","tx":["You have proficiency with the Perception skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Shifting","tx":["As a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute,"]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Tough","tx":["You have proficiency with the Athletics skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Shifting Feature","tx":["Whenever you shift, you gain 1d6 additional temporary hit points, and while shifted, you have a +1 b"]}]},{"n":"Bishtahar Elf","sz":"M","spd":"35","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Plane Shift: Kaladesh, p. 21"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow. Fey Ancestry. You have a"]},{"n":"Trance","tx":["Elves don’t need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Fleet of Foot","tx":["Your base walking speed increases to 35 feet.\n \nSource: Plane Shift: Kaladesh, p. 21"]},{"n":"Mask of the Wild","tx":["You can attempt to hide even when you are only lightly obscured by foliage, heavy rain, falling snow"]}]},{"n":"Bugbear","sz":"M","spd":"30","lng":"","abi":"Strength +2, Dexterity +1","bonus":{"STR":2,"DEX":1},"skills":["Stealth"],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Long-Limbed","tx":["When you make a melee attack on your turn, your reach for it is 5 feet greater than normal."]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Sneaky","tx":["You are proficient in the Stealth skill."]},{"n":"Surprise Attack","tx":["If you surprise a creature and hit it with an attack on your first turn in combat, the attack deals "]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin."]}]},{"n":"Changeling","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":["Intimidation","Persuasion","Insight","Deception"],"traits":[{"n":"Ability Score Increase","tx":["Either your Dexterity or your Intelligence increases by 1 (your choice).\n\n \nSource: Wayfinder's Guid"]},{"n":"Change Appearance","tx":["As an action, you can transform your appearance or revert to your natural form. You can’t duplicate "]},{"n":"Changeling Instincts","tx":["You gain proficiency with two of the following skills of your choice: Deception, Intimidation, Insig"]},{"n":"Unsettling Visage","tx":["When a creature you can see makes an attack roll against you, you can use your reaction to impose di"]},{"n":"Divergent Persona","tx":["You gain proficiency with one tool of your choice. Define a unique identity associated with that pro"]},{"n":"Languages","tx":["You can speak, read, and write Common and two other languages of your choice.\n \nSource: Wayfinder's "]}]},{"n":"Dragonborn","sz":"M","spd":"30","lng":"","abi":"Strength +2, Charisma +1","bonus":{"STR":2,"CHA":1},"skills":[],"traits":[{"n":"Draconic Ancestry","tx":["You have draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath "]},{"n":"Breath Weapon","tx":["You can use your action to exhale destructive energy. Your draconic ancestry determines the size, sh"]},{"n":"Damage Resistance","tx":["You have resistance to the damage type associated with your draconic ancestry."]},{"n":"Languages","tx":["You can speak, read, and write Common and Draconic. Draconic is thought to be one of the oldest lang"]}]},{"n":"Dwarf (Duergar)","sz":"M","spd":"25","lng":"","abi":"Constitution +2, Strength +1","bonus":{"STR":1,"CON":2},"skills":["History","Perception"],"traits":[{"n":"Superior Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Duergar Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage. Y"]},{"n":"Dwarven Combat Training","tx":["You have proficiency with the battleaxe, handaxe, light hammer, and warhammer."]},{"n":"Tool Proficiency","tx":["You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies, or m"]},{"n":"Stonecunning","tx":["Whenever you make an Intelligence (History) check related to the origin of stonework, you are consid"]},{"n":"Languages","tx":["You can speak, read, and write Common, Dwarvish, and Undercommon."]}]},{"n":"Dwarf (Hill)","sz":"M","spd":"25","lng":"","abi":"Constitution +2, Wisdom +1","bonus":{"CON":2,"WIS":1},"skills":["History"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Dwarven Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage."]},{"n":"Dwarven Combat Training","tx":["You have proficiency with the battleaxe, handaxe, light hammer, and warhammer."]},{"n":"Tool Proficiency","tx":["You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies, or m"]},{"n":"Stonecunning","tx":["Whenever you make an Intelligence (History) check related to the origin of stonework, you are consid"]},{"n":"Languages","tx":["You can speak, read, and write Common and Dwarvish. Dwarvish is full of hard consonants and guttural"]}]},{"n":"Dwarf (Mountain)","sz":"M","spd":"25","lng":"","abi":"Constitution +2, Strength +2","bonus":{"STR":2,"CON":2},"skills":["History"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Dwarven Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage."]},{"n":"Dwarven Combat Training","tx":["You have proficiency with the battleaxe, handaxe, light hammer, and warhammer."]},{"n":"Tool Proficiency","tx":["You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies, or m"]},{"n":"Stonecunning","tx":["Whenever you make an Intelligence (History) check related to the origin of stonework, you are consid"]},{"n":"Languages","tx":["You can speak, read, and write Common and Dwarvish. Dwarvish is full of hard consonants and guttural"]}]},{"n":"Elf (Drow)","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":["Perception"],"traits":[{"n":"Superior Darkvision","tx":["Accustomed to the depths of the Underdark, you have superior vision in dark and dim conditions. You "]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill."]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Trance","tx":["Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish. Elvish is fluid, with subtle intonations and intri"]},{"n":"Sunlight Sensitivity","tx":["You have disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight when you,"]}]},{"n":"Elf (Eladrin)","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Intelligence +1","bonus":{"DEX":2,"INT":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill."]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Trance","tx":["Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish. Elvish is fluid, with subtle intonations and intri"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow."]}]},{"n":"Elf (High)","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Intelligence +1","bonus":{"DEX":2,"INT":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill."]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Trance","tx":["Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice. Elvish is flui"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow."]}]},{"n":"Elf (Wood)","sz":"M","spd":"35","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill."]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Trance","tx":["Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish. Elvish is fluid, with subtle intonations and intri"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow."]}]},{"n":"Fairy","sz":"T","spd":"40","lng":"","abi":"Dexterity +2","bonus":{"DEX":2},"skills":["Athletics","Sleight of Hand"],"traits":[{"n":"Speed","tx":["You have a normal walking speed of 10ft. You have a fly speed of 40 and you can hover if you are no "]},{"n":"Size","tx":["You are Tiny. Pixies hardly reach over the height of 1 foot. For all intents and purposes the Tiny P"]},{"n":"Darkvision","tx":["You're accustomed to living in forest and in undergrowth with dim or darker lighting. You can see in"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Invisibility","tx":["You can turn invisible as an action and it lasts until you attack, cast a spell, willing end it, or "]},{"n":"Tiny Hands","tx":["You have disadvantage on Athletics checks, but you have advantage on Sleight of Hand checks, wisdom "]}]},{"n":"Fairy","sz":"T","spd":"40","lng":"","abi":"Dexterity +2","bonus":{"DEX":2},"skills":["Athletics","Sleight of Hand"],"traits":[{"n":"Speed","tx":["You have a normal walking speed of 10ft. You have a fly speed of 40 and you can hover if you are no "]},{"n":"Size","tx":["You are Tiny. Pixies hardly reach over the height of 1 foot. For all intents and purposes the Tiny P"]},{"n":"Darkvision","tx":["You're accustomed to living in forest and in undergrowth with dim or darker lighting. You can see in"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Invisibility","tx":["You can turn invisible as an action and it lasts until you attack, cast a spell, willing end it, or "]},{"n":"Tiny Hands","tx":["You have disadvantage on Athletics checks, but you have advantage on Sleight of Hand checks, wisdom "]}]},{"n":"Firbolg","sz":"M","spd":"30","lng":"","abi":"Wisdom +2, Strength +1","bonus":{"STR":1,"WIS":2},"skills":[],"traits":[{"n":"Firbolg Magic","tx":["You can cast detect magic and disguise self with this trait, using Wisdom as your spellcasting abili"]},{"n":"Hidden Step","tx":["As a bonus action, you can magically turn invisible until the start of your next turn ot until you a"]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Speech of Beast and Leaf","tx":["You have the ability to communicate in a limited manner with beasts and plants. They can understand "]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and Giant."]}]},{"n":"Gavony Human","sz":"M","spd":"30","lng":"","abi":"Strength +1, Dexterity +1, Constitution +1, Intelligence +1, Wisdom +1, Charisma +1","bonus":{"STR":1,"DEX":1,"CON":1,"INT":1,"WIS":1,"CHA":1},"skills":[],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice.\n \nSource: Plane Shift: "]}]},{"n":"Genasi (Air)","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Dexterity +1","bonus":{"DEX":1,"CON":2},"skills":[],"traits":[{"n":"Unending Breath","tx":["You can hold your breath indefinitely while you're not incapacitated."]},{"n":"Mingle with the Wind","tx":["You can cast the levitate spell once with this trait, requiring no material components, and you rega"]},{"n":"Languages","tx":["You can speak, read, and write Common and Primordial. Primordial is a guttural language, filled with"]}]},{"n":"Genasi (Earth)","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Strength +1","bonus":{"STR":1,"CON":2},"skills":[],"traits":[{"n":"Earth Walk","tx":["You can move across difficult terrain made of earth or stone without expending extra movement."]},{"n":"Merge with Stone","tx":["You can cast the pass without trace spell once with this trait, requiring no material components, an"]},{"n":"Languages","tx":["You can speak, read, and write Common and Primordial. Primordial is a guttural language, filled with"]}]},{"n":"Genasi (Fire)","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Intelligence +1","bonus":{"CON":2,"INT":1},"skills":[],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Fire Resistance","tx":["You have resistance to fire damage."]},{"n":"Reach to the Blaze","tx":["You know the produce flame cantrip. Once you reach 3rd level, you can cast the burning hands spell o"]},{"n":"Languages","tx":["You can speak, read, and write Common and Primordial. Primordial is a guttural language, filled with"]}]},{"n":"Genasi (Water)","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Wisdom +1","bonus":{"CON":2,"WIS":1},"skills":[],"traits":[{"n":"Acid Resistance","tx":["You have resistance to acid damage."]},{"n":"Amphibious","tx":["You can breathe air and water."]},{"n":"Swim","tx":["You have a swimming speed of 30 feet."]},{"n":"Call to the Wave","tx":["You know the shape water cantrip. When you reach 3rd level, you can cast the create or destroy water"]},{"n":"Languages","tx":["You can speak, read, and write Common and Primordial. Primordial is a guttural language, filled with"]}]},{"n":"Gnome (Deep)","sz":"S","spd":"25","lng":"","abi":"Intelligence +2, Dexterity +1","bonus":{"DEX":1,"INT":2},"skills":[],"traits":[{"n":"Superior Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Gnome Cunning","tx":["You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic."]},{"n":"Stone Camouflage","tx":["You have advantage on Dexterity (stealth) checks to hide in rocky terrain."]},{"n":"Languages","tx":["You can speak, read, and write Common, Gnomish, and Undercommon. The svirfneblin dialect is more gut"]}]},{"n":"Gnome (Forest)","sz":"S","spd":"25","lng":"","abi":"Intelligence +2, Dexterity +1","bonus":{"DEX":1,"INT":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Gnome Cunning","tx":["You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic."]},{"n":"Languages","tx":["You can speak, read, and write Common and Gnomish. The Gnomish language, which uses the Dwarvish scr"]},{"n":"Natural Illusionist","tx":["You know the minor illusion cantrip. Intelligence is your spellcasting ability for it."]},{"n":"Speak with Small Beasts","tx":["Through sounds and gestures, you can communicate simple ideas with Small or smaller beasts. Forest g"]}]},{"n":"Gnome (Rock)","sz":"S","spd":"25","lng":"","abi":"Intelligence +2, Constitution +1","bonus":{"CON":1,"INT":2},"skills":["History"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Gnome Cunning","tx":["You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic."]},{"n":"Languages","tx":["You can speak, read, and write Common and Gnomish. The Gnomish language, which uses the Dwarvish scr"]},{"n":"Artificer's Lore","tx":["Whenever you make an Intelligence (History) check related to magic items, alchemical objects, or tec"]},{"n":"Tinker","tx":["You have proficiency with artisan's tools (tinker's tools). Using those tools, you can spend 1 hour "]}]},{"n":"Goblin","sz":"S","spd":"30","lng":"","abi":"Dexterity +2, Constitution +1","bonus":{"DEX":2,"CON":1},"skills":[],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Fury of the Small","tx":["When you damage a creature with an attack or a spell and the creature's size is larger than yours, y"]},{"n":"Nimble Escape","tx":["You can take the Disengage or Hide action as a bonus action on each of your turns."]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin."]}]},{"n":"Goliath","sz":"M","spd":"30","lng":"","abi":"Strength +2, Constitution +1","bonus":{"STR":2,"CON":1},"skills":["Athletics"],"traits":[{"n":"Natural Athlete","tx":["You have proficiency in the Athletics skill."]},{"n":"Stone's Endurance","tx":["You can focus yourself to occasionally shrug off injury. When you take damage, you can use your reac"]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Mountain Born","tx":["You're acclimated to high altitude, including elevations above 20,000 feet. You're also naturally ad"]},{"n":"Languages","tx":["You can speak, read, and write Common and Giant."]}]},{"n":"Grotag Goblin","sz":"S","spd":"25","lng":"","abi":"Constitution +2","bonus":{"CON":2},"skills":["Animal Handling"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Grit","tx":["You have resistance to fire damage and psychic damage. In addition, when you are wearing no armor, y"]},{"n":"Grotag Tamer","tx":["You have proficiency in the Animal Handling skill.\n \nSource: Plane Shift: Zendikar, p. 16"]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin.\n \nSource: Plane Shift: Zendikar, p. 16"]}]},{"n":"Half-Elf","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":[],"traits":[{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1."]},{"n":"Darkvision","tx":["Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim li"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Skill Versatility","tx":["You gain proficiency in two skills of your choice."]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice."]}]},{"n":"Half-Elf (Aquatic Elf Descent)","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":["Perception"],"traits":[{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1."]},{"n":"Darkvision","tx":["Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim li"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Variant Feature (Choose 1)","tx":["Keen Senses\nYou have proficiency in the Perception skill\n\nSwim\nYou gain a swimming speed of 30."]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice."]}]},{"n":"Half-Elf (Drow Descent)","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":["Perception"],"traits":[{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1."]},{"n":"Darkvision","tx":["Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim li"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Variant Feature (Choose 1)","tx":["Keen Senses\nYou have proficiency in the Perception skill\n\nDrow Magic\nYou know the dancing lights can"]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice."]}]},{"n":"Half-Elf (Moon Elf or Sun Elf Descent)","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":["Perception"],"traits":[{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1."]},{"n":"Darkvision","tx":["Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim li"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Variant Feature (Choose 1)","tx":["Keen Senses\nYou have proficiency in the Perception skill\n\nElf Weapon Training\nYou have proficiency w"]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice."]}]},{"n":"Half-Elf (Wood Elf Descent)","sz":"M","spd":"30","lng":"","abi":"Charisma +2","bonus":{"CHA":2},"skills":["Perception"],"traits":[{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1."]},{"n":"Darkvision","tx":["Thanks to your elf blood, you have superior vision in dark and dim conditions. You can see in dim li"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep."]},{"n":"Variant Feature (Choose 1)","tx":["Keen Senses\nYou have proficiency in the Perception skill\n\nElf Weapon Training\nYou have proficiency w"]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice."]}]},{"n":"Half-Orc","sz":"M","spd":"30","lng":"","abi":"Strength +2, Constitution +1","bonus":{"STR":2,"CON":1},"skills":["Intimidation"],"traits":[{"n":"Darkvision","tx":["Thanks to your orc blood, you have superior vision in dark and dim conditions. You can see in dim li"]},{"n":"Menacing","tx":["You gain proficiency in the Intimidation skill."]},{"n":"Relentless Endurance","tx":["When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Y"]},{"n":"Savage Attacks","tx":["When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage di"]},{"n":"Languages","tx":["You can speak, read, and write Common and Orc. Orc is a harsh, grating language with hard consonants"]}]},{"n":"Halfling (Ghostwise)","sz":"S","spd":"25","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":[],"traits":[{"n":"Lucky","tx":["When you roll a 1 on an attack roll, ability check, or saving throw, you can reroll the die and must"]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened."]},{"n":"Halfling Nimbleness","tx":["You can move through the space of any creature that is of a size larger than yours."]},{"n":"Languages","tx":["You can speak, read, and write Common and Halfling. The Halfling language isn't secret, but halfling"]},{"n":"Silent Speech","tx":["You can speak telepathically to any creature within 30 feet of you. The creature understands you onl"]}]},{"n":"Halfling (Lightfoot)","sz":"S","spd":"25","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":[],"traits":[{"n":"Lucky","tx":["When you roll a 1 on an attack roll, ability check, or saving throw, you can reroll the die and must"]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened."]},{"n":"Halfling Nimbleness","tx":["You can move through the space of any creature that is of a size larger than yours."]},{"n":"Languages","tx":["You can speak, read, and write Common and Halfling. The Halfling language isn't secret, but halfling"]},{"n":"Naturally Stealthy","tx":["You can attempt to hide even when you are obscured only by a creature that is at least one size larg"]}]},{"n":"Halfling (Stout)","sz":"S","spd":"25","lng":"","abi":"Dexterity +2, Constitution +1","bonus":{"DEX":2,"CON":1},"skills":[],"traits":[{"n":"Lucky","tx":["When you roll a 1 on an attack roll, ability check, or saving throw, you can reroll the die and must"]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened."]},{"n":"Halfling Nimbleness","tx":["You can move through the space of any creature that is of a size larger than yours."]},{"n":"Languages","tx":["You can speak, read, and write Common and Halfling. The Halfling language isn't secret, but halfling"]},{"n":"Stout Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage."]}]},{"n":"Hawk-Headed Aven","sz":"M","spd":"25","lng":"","abi":"Dexterity +2, Wisdom +2","bonus":{"DEX":2,"WIS":2},"skills":["Perception"],"traits":[{"n":"Flight","tx":["You have a flying speed of 30 feet. You can’t use your flying speed while you wear medium or heavy a"]},{"n":"Hawkeyed","tx":["You have proficiency in the Perception skill. In addition, attacking at long range doesn’t impose di"]},{"n":"Languages","tx":["You can speak, read, and write Common and Aven.\n \nSource: Plane Shift: Amonkhet, p. 16"]}]},{"n":"High Elf","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Intelligence +1","bonus":{"DEX":2,"INT":1},"skills":["Perception"],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and Elvish. Elvish is fluid, with subtle intonations and intri"]},{"n":"Extra Language","tx":["You can speak, read, and write one extra language of your choice."]},{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill."]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can’t put you to sleep."]},{"n":"Trance","tx":["Elves don’t need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]}]},{"n":"Hill Dwarf","sz":"M","spd":"25","lng":"","abi":"Constitution +2, Wisdom +1","bonus":{"CON":2,"WIS":1},"skills":["History"],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and Dwarvish. Dwarvish is full of hard consonants and guttural"]},{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Dwarven Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage."]},{"n":"Dwarven Combat Training","tx":["You have proficiency with the battleaxe, handaxe, light hammer, and warhammer."]},{"n":"Tool Proficiency","tx":["You gain proficiency with the artisan’s tools of your choice: smith’s tools, brewer’s supplies, or m"]},{"n":"Stonecunning","tx":["Whenever you make an Intelligence (History) check related to the origin of stonework, you are consid"]}]},{"n":"Hobgoblin","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Intelligence +1","bonus":{"CON":2,"INT":1},"skills":[],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Martial Training","tx":["You are proficient with two martial weapons of your choice and with light armor."]},{"n":"Saving Face","tx":["Hobgoblins are careful not to show weakness in front of their allies, for fear of losing status. If "]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin."]}]},{"n":"Human","sz":"M","spd":"30","lng":"","abi":"Strength +1, Dexterity +1, Constitution +1, Intelligence +1, Wisdom +1, Charisma +1","bonus":{"STR":1,"DEX":1,"CON":1,"INT":1,"WIS":1,"CHA":1},"skills":[],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice. Humans typically learn "]}]},{"n":"Human (Variant)","sz":"M","spd":"30","lng":"","abi":"","bonus":{},"skills":[],"traits":[{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1."]},{"n":"Skills","tx":["You gain proficiency in one skill of your choice."]},{"n":"Feat","tx":["You gain one feat of your choice."]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice. Humans typically learn "]}]},{"n":"Ibis-Headed Aven","sz":"M","spd":"25","lng":"","abi":"Dexterity +2, Intelligence +1","bonus":{"DEX":2,"INT":1},"skills":[],"traits":[{"n":"Flight","tx":["You have a flying speed of 30 feet. You can’t use your flying speed while you wear medium or heavy a"]},{"n":"Kefnet’s Blessing","tx":["You can add half your proficiency bonus, rounded down, to any Intelligence check you make that doesn"]},{"n":"Languages","tx":["You can speak, read, and write Common and Aven.\n \nSource: Plane Shift: Amonkhet, p. 16"]}]},{"n":"Joraga Elf","sz":"M","spd":"35","lng":"","abi":"Wisdom +2, Dexterity +1","bonus":{"DEX":1,"WIS":2},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Plane Shift: Zendikar, p. 18"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can’t put you to sleep.\n \nSourc"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow.\n \nSource: Plane Shift: Z"]},{"n":"Fleet of Foot","tx":["Your base walking speed increases to 35 feet.\n \nSource: Plane Shift: Zendikar, p. 19"]},{"n":"Mask of the Wild","tx":["You can attempt to hide even when you are only lightly obscured by foliage, heavy rain, falling snow"]}]},{"n":"Kaladesh Dwarf","sz":"M","spd":"25","lng":"","abi":"Constitution +2, Wisdom +1","bonus":{"CON":2,"WIS":1},"skills":["History"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground in your race’s ancient past, you have superior vision in dark and dim"]},{"n":"Dwarven Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage.\n "]},{"n":"Dwarven Toughness","tx":["Your hit point maximum increases by 1, and it increases by 1 every time you gain a level. \n \nSource:"]},{"n":"Artisan’s Expertise","tx":["You gain proficiency with two kinds of artisan’s tools of your choice. Your proficiency bonus is dou"]},{"n":"Languages","tx":["You can speak, read, and write Common and Dwarvish. Dwarvish is full of hard consonants and guttural"]}]},{"n":"Kalashtar","sz":"M","spd":"30","lng":"","abi":"Wisdom +1, Charisma +1","bonus":{"WIS":1,"CHA":1},"skills":["Intimidation","Performance","Insight","Persuasion"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Dual Mind","tx":["When you make a Wisdom saving throw, you can use your reaction to gain advantage on the roll. You ca"]},{"n":"Mental Discipline","tx":["You have resistance to psychic damage.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Mind Link","tx":["You can speak telepathically to any creature you can see within 60 feet of you. You don’t need to sh"]},{"n":"Psychic Glamout","tx":["Choose one of the following skills: Insight, Intimidation, Performance, or Persuasion. You have adva"]},{"n":"Severed from Dreams","tx":["Kalashtar sleep, but they don’t connect to the plane of dreams as other creatures do. Instead, their"]}]},{"n":"Kenku","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Stealth","Sleight of Hand","Deception","Acrobatics","Insight"],"traits":[{"n":"Expert Forgery","tx":["You can duplicate other creatures' handwriting and craftwork. You have advantage on all checks made "]},{"n":"Kenku Training","tx":["You are proficient in your choice of two of the following skills: Acrobatics, Deception, Stealth, an"]},{"n":"Mimicry","tx":["You can mimic sounds you have heard, including voices. A creature that hears the sounds can tell the"]},{"n":"Languages","tx":["You can read and write Common and Auran, but you can speak only using your Mimicry trait"]}]},{"n":"Kessig Human","sz":"M","spd":"40","lng":"","abi":"Dexterity +1, Wisdom +1","bonus":{"DEX":1,"WIS":1},"skills":["Survival"],"traits":[{"n":"Forest Folk","tx":["You have proficiency in the Survival skill.\n \nSource: Plane Shift: Innistrad, p. 8"]},{"n":"Fleet of Foot","tx":["Your base walking speed is 40 feet.\n \nSource: Plane Shift: Innistrad, p. 8"]},{"n":"Sure-Footed","tx":["When you use the Dash action, difficult terrain doesn’t cost you extra movement on that turn.\n \nSour"]},{"n":"Spring Attack","tx":["When you make a melee attack against a creature, you don’t provoke opportunity attacks from that cre"]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice.\n \nSource: Plane Shift: "]}]},{"n":"Khenra","sz":"M","spd":"35","lng":"","abi":"Dexterity +2, Strength +1","bonus":{"STR":1,"DEX":2},"skills":[],"traits":[{"n":"Khenra Weapon Training","tx":["You have proficiency with the khopesh, spear, and javelin.\n \nSource: Plane Shift: Amonkhet, p. 18"]},{"n":"Khenra Twins","tx":["If your twin is alive and you can see your twin, whenever you roll a 1 on an attack roll, ability ch"]},{"n":"Languages","tx":["You can speak, read, and write Common and Khenra.\n \nSource: Plane Shift: Amonkhet, p. 18"]}]},{"n":"Kobold","sz":"S","spd":"30","lng":"","abi":"Dexterity +2, Strength -2","bonus":{"DEX":2},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Grovel, Cower, and Beg","tx":["As an action on your turn, you can cower pathetically to distract nearby foes. Until the end of your"]},{"n":"Pack Tactics","tx":["You have advantage on an attack roll against a creature if at least one of your allies is within 5 f"]},{"n":"Sunlight Sensitivity","tx":["You have disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight when you,"]},{"n":"Languages","tx":["You can speak, read, and write Common and Draconic."]}]},{"n":"Kor","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Athletics","Acrobatics"],"traits":[{"n":"Kor Climbing","tx":["You have a climb speed of 30 feet as long as you are not encumbered or wearing heavy armor. You have"]},{"n":"Lucky","tx":["When you roll a 1 on the d20 for an attack roll, ability check, or saving throw, you can reroll the "]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened.\n \nSource: Plane Shift: Zendikar, p. 11"]},{"n":"Languages","tx":["You can speak, read, and write Common, and communicate in the silent speech of the kor.\n \nSource: Pl"]}]},{"n":"Lavastep Goblin","sz":"S","spd":"25","lng":"","abi":"Constitution +2","bonus":{"CON":2},"skills":["Stealth"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Grit","tx":["You have resistance to fire damage and psychic damage. In addition, when you are wearing no armor, y"]},{"n":"Lavastep Grit","tx":["You have advantage on Dexterity (Stealth) checks made to hide in rocky or subterranean environments."]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin.\n \nSource: Plane Shift: Zendikar, p. 16"]}]},{"n":"Lightfoot Halfling","sz":"S","spd":"25","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":[],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and Halfling. The Halfling language isn’t secret, but halfling"]},{"n":"Lucky","tx":["When you roll a 1 on the d20 for an attack roll, ability check, or saving throw, you can reroll the "]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened."]},{"n":"Halfling Nimbleness","tx":["You can move through the space of any creature that is of a size larger than yours."]},{"n":"Naturally Stealthy","tx":["You can attempt to hide even when you are obscured only by a creature that is at least one size larg"]}]},{"n":"Lizardfolk","sz":"M","spd":"30","lng":"","abi":"Constitution +2, Wisdom +1","bonus":{"CON":2,"WIS":1},"skills":["Survival","Stealth","Perception","Animal Handling","Nature"],"traits":[{"n":"Swim Speed","tx":["You have a swimming speed of 30 feet."]},{"n":"Bite","tx":["Your fanged maw is a natural weapon, which you can use to make unarmed strikes. If you hit with it, "]},{"n":"Cunning Artisan","tx":["As part of a short rest, you can harvest bone and hide from a slain beast, construct, dragon, monstr"]},{"n":"Hold Breath","tx":["You can hold your breath for up to 15 minutes at a time."]},{"n":"Hunter's Lore","tx":["You gain proficiency with two of the following skills of your choice: Animal Handling, Nature, Perce"]},{"n":"Natural Armor","tx":["You have tough, scaly skin. When you aren't wearing armor, your AC is 13 + your Dexterity modifier. "]}]},{"n":"Longtooth Shifter","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Strength +2","bonus":{"STR":2,"DEX":1},"skills":["Intimidation","Perception"],"traits":[{"n":"Darkvision","tx":["You have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you "]},{"n":"Keen Senses","tx":["You have proficiency with the Perception skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Shifting","tx":["As a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute,"]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Fierce","tx":["You have proficiency with the Intimidation skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Shifting Feature","tx":["While shifted, you can use your elongated fangs to make an unarmed strike as a bonus action. If you "]}]},{"n":"Mark of Detection Half-Elf","sz":"M","spd":"30","lng":"","abi":"Intelligence +1, Charisma +1","bonus":{"INT":1,"CHA":1},"skills":["Investigation","Insight"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Deductive Intuition","tx":["When you make an Intelligence (Investigation) or Wisdom (Insight) check, you can roll one Intuition "]},{"n":"Sense Threats","tx":["You can cast the detect magic and detect poison and disease spells, but only as rituals. Intelligenc"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]}]},{"n":"Mark of Finding Half-Orc","sz":"M","spd":"30","lng":"","abi":"Strength +1, Wisdom +1","bonus":{"STR":1,"WIS":1},"skills":["Survival","Perception"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Hunter's Intuition","tx":["Your mark sharpens your senses and helps you find your prey. When you make a Wisdom (Perception) or "]},{"n":"Imprint Prey","tx":["As a bonus action, choose one creature you can see within 30 feet of you. The target is imprinted in"]},{"n":"Nature's Voice","tx":["When you reach 3rd level you gain the ability to cast locate animal or plant, but only as a ritual.\n"]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]}]},{"n":"Mark of Finding Human","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Wisdom +1","bonus":{"DEX":1,"WIS":1},"skills":["Survival","Perception"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Hunter's Intuition","tx":["Your mark sharpens your senses and helps you find your prey. When you make a Wisdom (Perception) or "]},{"n":"Imprint Prey","tx":["As a bonus action, choose one creature you can see within 30 feet of you. The target is imprinted in"]},{"n":"Nature's Voice","tx":["When you reach 3rd level you gain the ability to cast locate animal or plant, but only as a ritual.\n"]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]}]},{"n":"Mark of Handling Human","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Wisdom +1","bonus":{"DEX":1,"WIS":1},"skills":["Animal Handling","Nature"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Wild Intuition","tx":["When you make a Wisdom (Animal Handling) or Intelligence (Nature) check, you can roll one Intuition "]},{"n":"Expert Handling","tx":["You can use the Help action to aid an ally animal companion or mount within 30 feet of you, rather t"]},{"n":"Primal Connection","tx":["You can cast animal friendship once with this trait and regain the ability to do so when you finish "]},{"n":"The Bigger They Are","tx":["When you cast a spell that affects only beasts, it also affects monstrosities with an Intelligence s"]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice. Humans typically learn "]}]},{"n":"Mark of Healing Halfling","sz":"S","spd":"25","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Medicine"],"traits":[{"n":"Lucky","tx":["When you roll a 1 on an attack roll, ability check, or saving throw, you can reroll the die and must"]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened.\n \nSource: Player's Handbook, p. 28"]},{"n":"Halfling Nimbleness","tx":["You can move through the space of any creature that is of a size larger than yours.\n \nSource: Player"]},{"n":"Languages","tx":["You can speak, read, and write Common and Halfling. The Halfling language isn't secret, but halfling"]},{"n":"Medical Intuition","tx":["When you make a Wisdom (Medicine) check, you can roll one Intuition die, a d4, and add the number ro"]},{"n":"Healing Touch","tx":["As an action, you can draw power from your dragonmark to spend one of your Hit Dice and revitalize y"]}]},{"n":"Mark of Hospitality Halfling","sz":"S","spd":"25","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":["Persuasion"],"traits":[{"n":"Lucky","tx":["When you roll a 1 on an attack roll, ability check, or saving throw, you can reroll the die and must"]},{"n":"Brave","tx":["You have advantage on saving throws against being frightened.\n \nSource: Player's Handbook, p. 28"]},{"n":"Halfling Nimbleness","tx":["You can move through the space of any creature that is of a size larger than yours.\n \nSource: Player"]},{"n":"Languages","tx":["You can speak, read, and write Common and Halfling. The Halfling language isn't secret, but halfling"]},{"n":"Innkeeper's Charms","tx":["You know the cantrips friends and prestidigitation. Charisma is your spellcasting ability for them.\n"]},{"n":"Ever Hospitable","tx":["When you make a Charisma (Persuasion) check or an ability check involving Brewer's Supplies or Cook'"]}]},{"n":"Mark of Making Human","sz":"M","spd":"30","lng":"","abi":"Intelligence +1, Dexterity +1","bonus":{"DEX":1,"INT":1},"skills":[],"traits":[{"n":"Ability Score Increase","tx":["Increase either Intelligence or Dexterity by an additional 1 point.\n \nSource: Wayfinder's Guide to E"]},{"n":"Artisan's Intuition","tx":["When you make an ability check with artisan’s tools, roll 1d4 and add it to the result.\n \nSource: Wa"]},{"n":"Maker's Gift","tx":["You know the cantrip mending and gain proficiency with one type of artisan’s tools\n \nSource: Wayfind"]},{"n":"Magecraft","tx":["You can create a temporary magic item out of common materials. Choose a cantrip from the wizard spel"]},{"n":"Spellsmith","tx":["You can spend one minute to weave a temporary enchantment into a nonmagical suit of armor or weapon."]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice. Humans typically learn "]}]},{"n":"Mark of Passage Human","sz":"M","spd":"40","lng":"","abi":"Dexterity +2","bonus":{"DEX":2},"skills":["Athletics"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Courier's Speed","tx":["Your base walking speed increases to 40 ft.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Intuitive Motion","tx":["When you make a Strength (Athletics) check or any ability check to operate or maintain a land vehicl"]},{"n":"Orien's Grace","tx":["When you use the Dash action, difficult terrain doesn’t cost you extra movement on that turn.\n \nSour"]},{"n":"Shared Passage","tx":["As a bonus action you can teleport a distance up to your walking speed, ending in an unoccupied spac"]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice. Humans typically learn "]}]},{"n":"Mark of Scribing Gnome","sz":"S","spd":"25","lng":"","abi":"Intelligence +2, Charisma +1","bonus":{"INT":2,"CHA":1},"skills":[],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Gnome Cunning","tx":["You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic.\n \nSource: "]},{"n":"Languages","tx":["You can speak, read, and write Common and Gnomish. The Gnomish language, which uses the Dwarvish scr"]},{"n":"Gifted Scribe","tx":["You are proficient with calligrapher’s supplies and the forgery kit. When you make an ability check "]},{"n":"Scribe's Insight","tx":["You can cast comprehend languages once with this trait, and you regain the ability to do so when you"]},{"n":"Whispering Wind","tx":["You know the cantrip message. Intelligence is your spellcasting ability when casting it.\n \nSource: W"]}]},{"n":"Mark of Sentinel Human","sz":"M","spd":"30","lng":"","abi":"Strength +1, Wisdom +1","bonus":{"STR":1,"WIS":1},"skills":["Insight","Perception"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Sentinel's Intuition","tx":["When you roll for Initiative or make a Wisdom (Perception) check to notice a threat, you can roll on"]},{"n":"Sentinel's Shield","tx":["You know the cantrip blade ward. You can cast shield once with this trait and regain the ability to "]},{"n":"Vigilant Guardian","tx":["As an action, you can designate an ally you can see as your ward. You have advantage on Wisdom (Insi"]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice. Humans typically learn "]}]},{"n":"Mark of Shadow Elf","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":["Stealth","Performance","Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Player's Handbook, p. 23"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can't put you to sleep.\n \nSourc"]},{"n":"Trance","tx":["Elves don't need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish. Elvish is fluid, with subtle intonations and intri"]},{"n":"Natural Talent","tx":["You gain proficiency with one musical instrument or the Performance skill.\n \nSource: Wayfinder's Gui"]}]},{"n":"Mark of Storm Half-Elf","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Charisma +1","bonus":{"DEX":1,"CHA":1},"skills":["Acrobatics"],"traits":[{"n":"Ability Score Increase","tx":["One ability score of your choice increases by 1.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Sea Monkey","tx":["Your base walking speed is 30 feet, and you have a swim speed of 30 feet.\n \nSource: Wayfinder's Guid"]},{"n":"Windwright's Intuition","tx":["When you make a Dexterity (Acrobatics) check or any ability check involving operating or maintaining"]},{"n":"Storm's Blessing","tx":["You have resistance to lightning damage.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Headwinds","tx":["You know the gust cantrip. When you reach 3rd level, you can cast the gust of wind spell once with t"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"]}]},{"n":"Mark of Warding Dwarf","sz":"M","spd":"25","lng":"","abi":"Constitution +2, Dexterity +1, Intelligence +1","bonus":{"DEX":1,"CON":2,"INT":1},"skills":["Investigation","History"],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Dwarven Resilience","tx":["You have advantage on saving throws against poison, and you have resistance against poison damage.\n "]},{"n":"Dwarven Combat Training","tx":["You have proficiency with the battleaxe, handaxe, light hammer, and warhammer.\n \nSource: Player's Ha"]},{"n":"Tool Proficiency","tx":["You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies, or m"]},{"n":"Stonecunning","tx":["Whenever you make an Intelligence (History) check related to the origin of stonework, you are consid"]},{"n":"Languages","tx":["You can speak, read, and write Common and Dwarvish. Dwarvish is full of hard consonants and guttural"]}]},{"n":"Minotaur","sz":"M","spd":"40","lng":"","abi":"Strength +2, Constitution +1","bonus":{"STR":2,"CON":1},"skills":["Intimidation"],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Monstrous Reputation","tx":["Due to their massive build and blood covered ancestry, minotaurs have proficiency on Intimidation."]},{"n":"Gore","tx":["A minotaur can make an attack with his horns, causing 1d8 piercing damage plus his Strength modifier"]}]},{"n":"Mul Daya Elf","sz":"M","spd":"30","lng":"","abi":"Wisdom +2, Strength +1","bonus":{"STR":1,"WIS":2},"skills":["Perception"],"traits":[{"n":"Superior Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Plane Shift: Zendikar, p. 18"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can’t put you to sleep.\n \nSourc"]},{"n":"Sunlight Sensitivity","tx":["You have disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight when you,"]},{"n":"Mul Daya Magic","tx":["You know the chill touch cantrip. When you reach 3rd level, you can cast the hex spell once with thi"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow.\n \nSource: Plane Shift: Z"]}]},{"n":"Nephalia Human","sz":"M","spd":"30","lng":"","abi":"Intelligence +1, Charisma +1","bonus":{"INT":1,"CHA":1},"skills":[],"traits":[{"n":"Breadth of Knowledge","tx":["You gain proficiency in any combination of four skills or with four tools of your choice.\n \nSource: "]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice.\n \nSource: Plane Shift: "]}]},{"n":"Orc","sz":"M","spd":"30","lng":"","abi":"Strength +2, Constitution +1","bonus":{"STR":2,"CON":1},"skills":["Intimidation"],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Aggressive","tx":["As a bonus action, you can move up to your movement speed toward a hostile creature you can see or h"]},{"n":"Menacing","tx":["You are trained in the Intimidation skill.\n \nSource: Volo's Guide to Monsters, p. 120"]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Languages","tx":["You can speak, read, and write Common and Orc.\n \nSource: Volo's Guide to Monsters, p. 120"]}]},{"n":"Orc (Uruck-High)","sz":"M","spd":"30","lng":"","abi":"Strength +2, Constitution +2, Intelligence -2","bonus":{"STR":2,"CON":2},"skills":["Intimidation"],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Aggressive","tx":["As a bonus action, you can move up to your movement speed toward a hostile creature you can see or h"]},{"n":"Menacing","tx":["You are trained in the Intimidation skill."]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Languages","tx":["You can speak, read, and write Common and Orc."]}]},{"n":"Orc (Uruck-High)","sz":"M","spd":"30","lng":"","abi":"Strength +2, Constitution +2, Intelligence -2","bonus":{"STR":2,"CON":2},"skills":["Intimidation"],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Aggressive","tx":["As a bonus action, you can move up to your movement speed toward a hostile creature you can see or h"]},{"n":"Menacing","tx":["You are trained in the Intimidation skill."]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]},{"n":"Languages","tx":["You can speak, read, and write Common and Orc."]}]},{"n":"Rock Gnome","sz":"S","spd":"25","lng":"","abi":"Intelligence +2, Constitution +1","bonus":{"CON":1,"INT":2},"skills":["History"],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and Gnomish. The Gnomish language, which uses the Dwarvish scr"]},{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Gnome Cunning","tx":["You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic."]},{"n":"Artificer’s Lore","tx":["Whenever you make an Intelligence (History) check related to magic items, alchemical objects, or tec"]},{"n":"Tinker","tx":["You have proficiency with artisan’s tools (tinker’s tools). Using those tools, you can spend 1 hour "]}]},{"n":"Shifter (Razorclaw)","sz":"M","spd":"30","lng":"","abi":"Dexterity +2","bonus":{"DEX":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Your lycanthropic heritage grants you the ability to see in dark conditions. You can see in dim ligh"]},{"n":"Shifting","tx":["On your turn, you can shift as a bonus action. Shifting lasts for 1 minute or until you end it on yo"]},{"n":"Languages","tx":["You can speak, read, and write Common and Sylvan."]},{"n":"Shifting Feature","tx":["While shifting, you can make an unarmed strike as a bonus action. You can use your Dexterity for its"]}]},{"n":"Shifter (Wildhunt)","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Wisdom +1","bonus":{"DEX":1,"WIS":1},"skills":[],"traits":[{"n":"Darkvision","tx":["Your lycanthropic heritage grants you the ability to see in dark conditions. You can see in dim ligh"]},{"n":"Shifting","tx":["On your turn, you can shift as a bonus action. Shifting lasts for 1 minute or until you end it on yo"]},{"n":"Languages","tx":["You can speak, read, and write Common and Sylvan."]},{"n":"Shifting Feature","tx":["While shifting, you gain advantage on all Wisdom-based checks and saving throws."]}]},{"n":"Stensia Human","sz":"M","spd":"30","lng":"","abi":"Strength +1, Constitution +1","bonus":{"STR":1,"CON":1},"skills":["Intimidation"],"traits":[{"n":"Daunting","tx":["You have proficiency in the Intimidation skill.\n \nSource: Plane Shift: Innistrad, p. 8"]},{"n":"Tough","tx":["Your hit point maximum increases by 2, and it increases by 2 every time you gain a level.\n \nSource: "]},{"n":"Languages","tx":["You can speak, read, and write Common and one extra language of your choice.\n \nSource: Plane Shift: "]}]},{"n":"Swiftstride Shifter","sz":"M","spd":"35","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":["Acrobatics","Perception"],"traits":[{"n":"Darkvision","tx":["You have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you "]},{"n":"Keen Senses","tx":["You have proficiency with the Perception skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Shifting","tx":["As a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute,"]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Graceful","tx":["You have proficiency with the Acrobatics skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Swift Stride","tx":["Your walking speed increases by 5 feet.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]}]},{"n":"Tabaxi","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Charisma +1","bonus":{"DEX":2,"CHA":1},"skills":["Stealth","Perception"],"traits":[{"n":"Darkvision","tx":["You have a cat's keen senses, especially in the dark. You can see in dim light within 60 feet of you"]},{"n":"Feline Agility","tx":["Your reflexes and agility allow you to move with a burst of speed. When you move on your turn in com"]},{"n":"Cat's Claws","tx":["Because of your claws, you have a climbing speed of 20 feet. In addition, your claws are natural wea"]},{"n":"Cat's Talents","tx":["You have proficiency in the Perception and Stealth skills."]},{"n":"Languages","tx":["You can speak, read, and write Common and one other language of your choice."]}]},{"n":"Tajuru Elf","sz":"M","spd":"30","lng":"","abi":"Wisdom +2, Charisma +1","bonus":{"WIS":2,"CHA":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Plane Shift: Zendikar, p. 18"]},{"n":"Fey Ancestry","tx":["You have advantage on saving throws against being charmed, and magic can’t put you to sleep.\n \nSourc"]},{"n":"Skill Versatility","tx":["You gain proficiency in any combination of two skills or tools of your choice\n \nSource: Plane Shift:"]},{"n":"Languages","tx":["You can speak, read, and write Common and Elvish. Elvish is fluid, with subtle intonations and intri"]}]},{"n":"Tiefling","sz":"M","spd":"30","lng":"","abi":"Intelligence +1, Charisma +2","bonus":{"INT":1,"CHA":2},"skills":[],"traits":[{"n":"Languages","tx":["You can speak, read, and write Common and Infernal."]},{"n":"Darkvision","tx":["Thanks to your infernal heritage, you have superior vision in dark and dim conditions. You can see i"]},{"n":"Hellish Resistance","tx":["You have resistance to fire damage."]},{"n":"Infernal Legacy","tx":["You know the thaumaturgy cantrip. When you reach 3rd level, you can cast the hellish rebuke spell as"]}]},{"n":"Tiefling (Infernal)","sz":"M","spd":"30","lng":"","abi":"Charisma +2, Intelligence +1","bonus":{"INT":1,"CHA":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Thanks to your infernal heritage, you have superior vision in dark and dim conditions. You can see i"]},{"n":"Hellish Resistance","tx":["You have resistance to fire damage."]},{"n":"Infernal Legacy","tx":["You know the thaumaturgy cantrip. Once you reach 3rd level, you can cast the hellish rebuke spell as"]},{"n":"Languages","tx":["You can speak, read, and write Common and Infernal."]},{"n":"Feral (Variant)","tx":["Your Intelligence score increases by 1, and your Dexterity score increases by 2. This replaces the A"]},{"n":"Variant Features (Choose 1)","tx":["Devil's Tongue.\n\tYou know the vicious mockery cantrip. When your reach 3rd level, you can cast the c"]}]},{"n":"Tirahar Elf","sz":"M","spd":"35","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Plane Shift: Kaladesh, p. 21"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow. Fey Ancestry. You have a"]},{"n":"Trance","tx":["Elves don’t need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Fleet of Foot","tx":["Your base walking speed increases to 35 feet.\n \nSource: Plane Shift: Kaladesh, p. 21"]},{"n":"Mask of the Wild","tx":["You can attempt to hide even when you are only lightly obscured by foliage, heavy rain, falling snow"]}]},{"n":"Trickster-Creed Merfolk","sz":"M","spd":"30","lng":"","abi":"Charisma +2, Intelligence +1","bonus":{"INT":1,"CHA":2},"skills":["Stealth","Sleight of Hand"],"traits":[{"n":"Amphibious","tx":["You have a swim speed of 30 feet. You can breathe air and water.\n \nSource: Plane Shift: Zendikar, p."]},{"n":"Creed of the Trickster","tx":["You have proficiency in the Sleight of Hand and Stealth skills.\n \nSource: Plane Shift: Zendikar, p. "]},{"n":"Cantrip","tx":["You know one cantrip of your choice from the bard spell list. Charisma is your spellcasting ability "]},{"n":"Languages","tx":["You can speak, read, and write Common, Merfolk, and one extra language of your choice.\n \nSource: Pla"]}]},{"n":"Triton","sz":"M","spd":"30","lng":"","abi":"Strength +1, Charisma +1, Constitution +1","bonus":{"STR":1,"CON":1,"CHA":1},"skills":[],"traits":[{"n":"Swim Speed","tx":["You have a swimming speed of 30 feet."]},{"n":"Amphibious","tx":["You can breathe air and water."]},{"n":"Control Air and Water","tx":["A child of the sea, you can call on the magic of elemental air and water. You can cast fog cloud wit"]},{"n":"Emissary of the Sea","tx":["Aquatic beasts have an extraordinary affinity with your people. You can communicate simple ideas wit"]},{"n":"Guardians of the Depths","tx":["Adapted to even the most extreme ocean depths, you have resistance to cold damage, and you ignore an"]},{"n":"Languages","tx":["You can speak, read, and write Common and Primordial."]}]},{"n":"Tuktuk Goblin","sz":"S","spd":"25","lng":"","abi":"Constitution +2","bonus":{"CON":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in "]},{"n":"Grit","tx":["You have resistance to fire damage and psychic damage. In addition, when you are wearing no armor, y"]},{"n":"Tuktuk Cunning","tx":["You have proficiency with thieves’ tools.\n \nSource: Plane Shift: Zendikar, p. 16"]},{"n":"Languages","tx":["You can speak, read, and write Common and Goblin.\n \nSource: Plane Shift: Zendikar, p. 16"]}]},{"n":"Vahadar Elf","sz":"M","spd":"30","lng":"","abi":"Dexterity +2, Wisdom +1","bonus":{"DEX":2,"WIS":1},"skills":["Perception"],"traits":[{"n":"Darkvision","tx":["Accustomed to twilit forests and the night sky, you have superior vision in dark and dim conditions."]},{"n":"Keen Senses","tx":["You have proficiency in the Perception skill.\n \nSource: Plane Shift: Kaladesh, p. 21"]},{"n":"Elf Weapon Training","tx":["You have proficiency with the longsword, shortsword, shortbow, and longbow. Fey Ancestry. You have a"]},{"n":"Trance","tx":["Elves don’t need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day"]},{"n":"Cantrip","tx":["You know one cantrip of your choice from the druid spell list. Wisdom is your spellcasting ability f"]},{"n":"Languages","tx":["You can speak, read, and write Common, Elvish, and one extra language of your choice. Elvish is flui"]}]},{"n":"Vedalken","sz":"M","spd":"30","lng":"","abi":"Intelligence +2, Wisdom +1","bonus":{"INT":2,"WIS":1},"skills":["History"],"traits":[{"n":"Vedalken Cunning","tx":["You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic.\n \nSource: "]},{"n":"Aether Lore","tx":["Whenever you make an Intelligence (History) check related to magic items or aether-powered technolog"]},{"n":"Languages","tx":["You can speak, read, and write Common and Vedalken. The Vedalken language is renowned for its techni"]}]},{"n":"Warforged Envoy","sz":"M","spd":"30","lng":"","abi":"Constitution +1","bonus":{"CON":1},"skills":["Stealth"],"traits":[{"n":"Warforged Resilience","tx":["You were created to have remarkable fortitude, represented by the following benefits.\n\t \n• You have "]},{"n":"Sentry's Rest","tx":["When you take a long rest, you must spend at least six hours in an inactive, motionless state, rathe"]},{"n":"Intergrated Protection","tx":["Your body has built-in defensive layers, which determine your armor class. You gain no benefit from "]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Ability Score Increase","tx":["Two different ability scores of your choice increase by 1.\n \nSource: Wayfinder's Guide to Eberron, C"]},{"n":"Specialized Design","tx":["You gain one skill proficiency of your choice, one tool proficiency of your choice, and fluency in o"]}]},{"n":"Warforged Juggernaut","sz":"M","spd":"30","lng":"","abi":"Constitution +1, Strength +2","bonus":{"STR":2,"CON":1},"skills":["Stealth"],"traits":[{"n":"Warforged Resilience","tx":["You were created to have remarkable fortitude, represented by the following benefits.\n\t \n• You have "]},{"n":"Sentry's Rest","tx":["When you take a long rest, you must spend at least six hours in an inactive, motionless state, rathe"]},{"n":"Intergrated Protection","tx":["Your body has built-in defensive layers, which determine your armor class. You gain no benefit from "]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Iron Fists","tx":["When you make an unarmed strike, you can deal 1d4 + your Strength modifier bludgeoning damage instea"]},{"n":"Powerful Build","tx":["You count as one size larger when determining your carrying capacity and the weight you can push, dr"]}]},{"n":"Warforged Skirmisher","sz":"M","spd":"30","lng":"","abi":"Constitution +1, Dexterity +2","bonus":{"DEX":2,"CON":1},"skills":["Stealth"],"traits":[{"n":"Warforged Resilience","tx":["You were created to have remarkable fortitude, represented by the following benefits.\n\t \n• You have "]},{"n":"Sentry's Rest","tx":["When you take a long rest, you must spend at least six hours in an inactive, motionless state, rathe"]},{"n":"Intergrated Protection","tx":["Your body has built-in defensive layers, which determine your armor class. You gain no benefit from "]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Swift","tx":["Your walking speed increases by 5 feet.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Light Step","tx":["When you are traveling alone for an extended period of time (one hour or more), you can move stealth"]}]},{"n":"Water-Creed Merfolk","sz":"M","spd":"30","lng":"","abi":"Charisma +1, Intelligence +2","bonus":{"INT":2,"CHA":1},"skills":["Survival"],"traits":[{"n":"Amphibious","tx":["You have a swim speed of 30 feet. You can breathe air and water.\n \nSource: Plane Shift: Zendikar, p."]},{"n":"Water Creed Navigation","tx":["You have proficiency with navigator’s tools and in the Survival skill.\n \nSource: Plane Shift: Zendik"]},{"n":"Cantrip","tx":["You know one cantrip of your choice from the wizard spell list. Intelligence is your spellcasting ab"]},{"n":"Languages","tx":["You can speak, read, and write Common, Merfolk, and one extra language of your choice.\n \nSource: Pla"]}]},{"n":"Wildhunt Shifter","sz":"M","spd":"30","lng":"","abi":"Dexterity +1, Wisdom +2","bonus":{"DEX":1,"WIS":2},"skills":["Survival","Perception"],"traits":[{"n":"Darkvision","tx":["You have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you "]},{"n":"Keen Senses","tx":["You have proficiency with the Perception skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Shifting","tx":["As a bonus action, you can assume a more bestial appearance. This transformation lasts for 1 minute,"]},{"n":"Languages","tx":["You can speak, read, and write Common.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Natural Tracker","tx":["You have proficiency with the Survival skill.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"]},{"n":"Mark the Scent","tx":["As a bonus action, you can mark one creature you can see within 10 feet of you. Until the end of you"]}]},{"n":"Wind-Creed Merfolk","sz":"M","spd":"30","lng":"","abi":"Charisma +1, Wisdom +2","bonus":{"WIS":2,"CHA":1},"skills":["Persuasion","Deception"],"traits":[{"n":"Amphibious","tx":["You have a swim speed of 30 feet. You can breathe air and water.\n \nSource: Plane Shift: Zendikar, p."]},{"n":"Wind Creed Manipulation","tx":["You have proficiency in the Deception and Persuasion skills.\n \nSource: Plane Shift: Zendikar, p. 13"]},{"n":"Cantrip","tx":["You know one cantrip of your choice from the druid spell list. Wisdom is your spellcasting ability f"]},{"n":"Languages","tx":["You can speak, read, and write Common, Merfolk, and one extra language of your choice.\n \nSource: Pla"]}]},{"n":"Yuan-ti Pureblood","sz":"M","spd":"30","lng":"","abi":"Charisma +2, Intelligence +1","bonus":{"INT":1,"CHA":2},"skills":[],"traits":[{"n":"Darkvision","tx":["You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it "]},{"n":"Innate Spellcasting","tx":["You know the poison spray cantrip. You can cast animal friendship an unlimited number of times with "]},{"n":"Magic Resistance","tx":["You have advantage on saving throws against spells and other magical effects."]},{"n":"Poison Immunity","tx":["You are immune to poison damage and the poisoned condition."]},{"n":"Languages","tx":["You can speak, read, and write Common, Abyssal, and Draconic."]}]},{"n":"Zendikar Vampire","sz":"M","spd":"30","lng":"","abi":"Intelligence +1, Charisma +2","bonus":{"INT":1,"CHA":2},"skills":[],"traits":[{"n":"Darkvision","tx":["Thanks to your heritage, you have superior vision in dark and dim conditions. You can see in dim lig"]},{"n":"Vampiric Resistance","tx":["You have resistance to necrotic damage.\n \nSource: Plane Shift: Zendikar, p. 15"]},{"n":"Blood Thirst","tx":["You can drain blood and life energy from a willing creature, or one that is grappled by you, incapac"]},{"n":"Languages","tx":["You can speak, read, and write Common and Vampire.\n \nSource: Plane Shift: Zendikar, p. 15"]}]}],"classes":[{"n":"Artificer","hd":"8","prof":"Constitution, Intelligence","saves":["CON","INT"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\n\nArmo"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a hand axe and light hammer or (b)"]},{"n":"Artificer Specialist","tx":["At 1st level, you choose the type of Artificer Specialist you are: Alchemist or Gunsmith, both of which are detailed at "]},{"n":"Magic Item Analysis","tx":["Starting at 1st level, your understanding of magic items allows you to analyze and understand their secrets. You know th"]},{"n":"Artificer Specialist: Alchemist","tx":["An alchemist is an expert at combining exotic reagents to produce a variety of materials, from healing draughts that can"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Arcana","History","Investigation","Medicine","Nature","Perception","Sleight of Hand"]},{"n":"Barbarian","hd":"12","prof":"Strength, Constitution","saves":["STR","CON"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a greataxe or (b) any martial mele"]},{"n":"Rage","tx":["In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\n    While raging, you g"]},{"n":"Unarmored Defense","tx":["While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. "]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Animal Handling","Athletics","Intimidation","Nature","Perception","Survival"]},{"n":"Bard","hd":"8","prof":"Dexterity, Charisma","saves":["DEX","CHA"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a rapier, (b) a longsword, or (c) "]},{"n":"Bardic Inspiration","tx":["You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one crea"]},{"n":"Spellcasting","tx":["You have learned to untangle and reshape the fabric of reality in harmony with your wishes and music. Your spells are pa"]}],"equip":"","nSkills":3,"spellcaster":true,"skillChoices":["Acrobatics","Animal Handling","Arcana","Athletics","Deception","History","Insight","Intimidation","Investigation","Medicine","Nature","Perception","Performance","Persuasion","Religion","Sleight of Hand","Stealth","Survival"]},{"n":"Blood Hunter","hd":"10","prof":"Strength, Wisdom","saves":["STR","WIS"],"features":[{"n":"Starting Proficiencies","tx":["Armor: Light armor, medium armor, shields\nWeapons: Simple weapons, martial weapons\nTools: Alchemist’s supplies\nSaving Th"]},{"n":"Starting Equipment","tx":["You start with the following equipment, in addition to the equipment granted by your background:\n\n(a) a martial weapon o"]},{"n":"Hunter's Bane","tx":["Beginning at 1st level, you have survived the imbibing of the Hunter’s Bane, a poisonous alchemical concoction that alte"]},{"n":"Crimson Rite","tx":["At 1st level, you learn to invoke a rite of blood magic within your weapon at the cost of your own vitality. Choose to l"]},{"n":"Primal Rites","tx":["Choose from the following:\n\nRite of the Roar, Rite of the Oracle, Rite of the Dead or Rite of the Ruined"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Athletics","Perception"]},{"n":"Cleric","hd":"8","prof":"Wisdom, Charisma","saves":["WIS","CHA"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a mace or (b) a warhammer (if prof"]},{"n":"Spellcasting","tx":["As a conduit for divine power, you can cast cleric spells. See chapter 10 for the general rules of spellcasting and chap"]},{"n":"Divine Domain","tx":["Choose one domain related to your deity: Arcana, Knowledge, Life, Light, Nature, Tempest, Trickery, or War. Each domain "]},{"n":"Divine Domain Arcana","tx":["Magic is an energy that suffuses the multiverse and that fuels both destruction and creation. Gods of the Arcana domain "]}],"equip":"","nSkills":2,"spellcaster":true,"skillChoices":["History","Insight","Medicine","Persuasion","Religion"]},{"n":"Cleric of the Five Gods","hd":"8","prof":"Wisdom, Charisma, History, Insight, Medicine, Persuasion, Religion","saves":["STR","CON"],"features":[{"n":"Starting Cleric of the Five Gods","tx":["As a 1st-level Cleric of the Five Gods, you begin play with 8+your Constitution modifier hit points.\n \nYou are proficien"]},{"n":"Multiclass Cleric of the Five Gods","tx":["To multiclass as a Cleric of the Five Gods, you must meet the following prerequisites:\n• Wisdom 13\n \nYou gain the follow"]},{"n":"Spellcasting","tx":["As a conduit for divine power, you can cast cleric spells. See chapter 10 for the general rules of spellcasting and chap"]},{"n":"Divine Domain","tx":["Choose one domain related to your deity: Knowledge, Life, Light, Nature, Tempest, Trickery, or War. Each domain is detai"]},{"n":"Divine Domain: Solidarity Domain (Oketra)","tx":["The worthy must know and respect all others whom the God-Pharaoh deems worthy, for in the afterlife, all will be united "]}],"equip":"","nSkills":2,"spellcaster":true,"skillChoices":["Athletics","Perception"]},{"n":"Druid","hd":"8","prof":"Intelligence, Wisdom","saves":["INT","WIS"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a wooden shield or (b) any simple "]},{"n":"Druidic","tx":["You know Druidic, the secret language of druids. You can speak the language and use it to leave hidden messages. You and"]},{"n":"Spellcasting","tx":["Drawing on the divine essence of nature itself, you can cast spells to shape that essence to your will. See chapter 10 f"]}],"equip":"","nSkills":2,"spellcaster":true,"skillChoices":["Arcana","Animal Handling","Insight","Medicine","Nature","Perception","Religion","Survival"]},{"n":"Fighter","hd":"10","prof":"Strength, Constitution","saves":["STR","CON"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) chain mail or (b) leather, longbow"]},{"n":"Fighting Style","tx":["You adopt a particular style of fighting as your specialty. Choose a fighting style from the list of optional features. "]},{"n":"Fighting Style: Archery","tx":["You gain a +2 bonus to attack rolls you make with ranged weapons."]},{"n":"Fighting Style: Defense","tx":["While you are wearing armor, you gain a +1 bonus to AC."]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Acrobatics","Animal Handling","Athletics","History","Insight","Intimidation","Perception","Survival"]},{"n":"Gunslinger","hd":"8","prof":"Dexterity, Wisdom","saves":["STR","CON"],"features":[{"n":"Starting Proficiencies","tx":["Armor: light armor, medium armor\nWeapons: Simple weapons, martial weapons, guns\nTools: Tinker's tools\nSaving Throws: Dex"]},{"n":"Starting Equipment","tx":["You start with the following equipment, in addition to the equipment granted by your background:\n\n(a) a light crossbow, "]},{"n":"Firearm Expertise","tx":["Starting at level 1, you gain a +2 bonus to attack rolls and damage rolls you make with firearms."]},{"n":"Weapon Forging","tx":["Starting at level 1, you can forge modern style firearms. The DM must determine whether an item is craftable, what mater"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Athletics","Perception"]},{"n":"Monk","hd":"8","prof":"Strength, Dexterity","saves":["STR","DEX"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a shortsword or (b) any simple wea"]},{"n":"Unarmored Defense","tx":["Beginning at 1st level, while you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity mod"]},{"n":"Martial Arts","tx":["Your practice of martial arts gives you mastery of combat styles that use unarmed strikes and monk weapons, which are sh"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Acrobatics","Athletics","History","Insight","Religion","Stealth"]},{"n":"Mystic (UA)","hd":"8","prof":"Intelligence, Wisdom","saves":["STR","CON"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a spear or (b) a mace \n• (a) leath"]},{"n":"Important Notes","tx":["Currently there are only rules for levels one to ten, so there is nothing past that included in the files.\n    Also, spe"]},{"n":"Psionics","tx":["As a student of psionics, you can master and use psionic disciplines."]},{"n":"Psionic Talents","tx":["A psionic talent is a minor psionic effect you have mastered. At 1st level, you know one psionic talent of your choice ("]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Athletics","Perception"]},{"n":"Paladin","hd":"10","prof":"Wisdom, Charisma","saves":["WIS","CHA"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a martial weapon and a shield or ("]},{"n":"Divine Sense","tx":["The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in"]},{"n":"Lay on Hands","tx":["Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With th"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Athletics","Insight","Intimidation","Medicine","Persuasion","Religion"]},{"n":"Ranger","hd":"10","prof":"Strength, Dexterity","saves":["STR","DEX"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) scale mail or (b) leather armor\n• "]},{"n":"Favored Enemy","tx":["Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type "]},{"n":"Natural Explorer","tx":["You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regi"]}],"equip":"","nSkills":3,"spellcaster":false,"skillChoices":["Animal Handling","Athletics","Insight","Investigation","Nature","Perception","Stealth","Survival"]},{"n":"Ranger (Revised)","hd":"10","prof":"Strength, Dexterity","saves":["STR","CON"],"features":[{"n":"Starting Ranger (Revised)","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Favored Enemy","tx":["Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type "]},{"n":"Natural Explorer","tx":["You are a master of navigating the natural world, and you react with swift and decisive action when attacked. This grant"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Athletics","Perception"]},{"n":"Rogue","hd":"8","prof":"Dexterity, Intelligence","saves":["DEX","INT"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a rapier or (b) a shortsword\n• (a)"]},{"n":"Expertise","tx":["At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thiev"]},{"n":"Sneak Attack","tx":["Beginning at 1st level, you know how to strike subtly and exploit a foe's distraction. Once per turn, you can deal an ex"]},{"n":"Thieves' Cant","tx":["During your rogue training you learned thieves' cant, a secret mix of dialect, jargon, and code that allows you to hide "]}],"equip":"","nSkills":4,"spellcaster":false,"skillChoices":["Acrobatics","Athletics","Deception","Insight","Intimidation","Investigation","Perception","Performance","Persuasion","Sleight of Hand","Stealth"]},{"n":"Sorcerer","hd":"6","prof":"Constitution, Charisma","saves":["CON","CHA"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a light crossbow and 20 bolts or ("]},{"n":"Spellcasting","tx":["An event in your past, or in the life of a parent or ancestor, left an indelible mark on you, infusing you with arcane m"]},{"n":"Sorcerous Origin","tx":["Choose a sorcerous origin, which describes the source of your innate magical power: Draconic Bloodline, Wild Magic, Favo"]},{"n":"Sorcerous Origin: Draconic Bloodline","tx":["Your innate magic comes from draconic magic that was mingled with your blood or that of your ancestors. Most often, sorc"]}],"equip":"","nSkills":2,"spellcaster":true,"skillChoices":["Arcana","Deception","Insight","Intimidation","Persuasion","Religion"]},{"n":"Sorcerer (Pyromancer)","hd":"6","prof":"Constitution, Charisma, Arcana, Deception, Insight, Intimidation, Persuasion, Religion","saves":["STR","CON"],"features":[{"n":"Starting Sorcerer (Pyromancer)","tx":["As a 1st-level Sorcerer (Pyromancer), you begin play with 6+your Constitution modifier hit points.\n \nYou are proficient "]},{"n":"Multiclass Sorcerer (Pyromancer)","tx":["To multiclass as a Sorcerer (Pyromancer), you must meet the following prerequisites:\n• Charisma 13\n \nYou gain the follow"]},{"n":"Spellcasting","tx":["An event in your past, or in the life of a parent or ancestor, left an indelible mark on you, infusing you with arcane m"]},{"n":"Sorcerous Origin","tx":["Choose a sorcerous origin, which describes the source of your innate magical power: Draconic Bloodline or Wild Magic, bo"]},{"n":"Sorcerous Origin: Pyromancer","tx":["Your innate magic manifests in fire. You are your fire, and your fire is you.\n\t\nSource: Plane Shift: Kaladesh, p. 9"]}],"equip":"","nSkills":2,"spellcaster":true,"skillChoices":["Athletics","Perception"]},{"n":"Warlock","hd":"8","prof":"Wisdom, Charisma","saves":["WIS","CHA"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a light crossbow and 20 bolts or ("]},{"n":"Otherworldly Patron","tx":["At 1st level, you have struck a bargain with an otherworldly being of your choice - the Archfey, the Fiend, or the Great"]},{"n":"Otherworldly Patron: The Archfey","tx":["Your patron is a lord or lady of the fey, a creature of legend who holds secrets that were forgotten before the mortal r"]},{"n":"Otherworldly Patron: The Fiend","tx":["You have made a pact with a fiend from the lower planes of existence, a being whose aims are evil, even if you strive ag"]}],"equip":"","nSkills":2,"spellcaster":false,"skillChoices":["Arcana","Deception","History","Intimidation","Investigation","Nature","Religion"]},{"n":"Wizard","hd":"6","prof":"Intelligence, Wisdom","saves":["INT","WIS"],"features":[{"n":"Starting Proficiencies","tx":["You are proficient with the following items, in addition to any proficiencies provided by your race or background.\nArmor"]},{"n":"Starting Equipment","tx":["You start with the following items, plus anything provided by your background.\n\n• (a) a quarterstaff or (b) a dagger\n• ("]},{"n":"Arcane Recovery","tx":["You have learned to regain some of your magical energy by studying your spellbook. Once per day when you finish a short "]},{"n":"Spellcasting","tx":["As a student of arcane magic, you have a spellbook containing spells that show the first glimmerings of your true power."]}],"equip":"","nSkills":2,"spellcaster":true,"skillChoices":["Arcana","History","Insight","Investigation","Medicine","Religion"]}],"backgrounds":[{"n":"Acolyte","prof":"Insight, Religion","skills":["Insight","Religion"],"traits":[{"n":"Overview","tx":["You have spent your life in the service of a temple to a specific god or pantheon of gods. You act a"]},{"n":"Skill Proficiencies","tx":["Insight, Religion"]},{"n":"Languages","tx":["Two of your choice"]},{"n":"Equipment","tx":["A holy symbol (a gift to you when you entered the priesthood), a prayer book or prayer wheel, 5 stic"]},{"n":"Feature: Shelter of the Faithful","tx":["As an acolyte, you command the respect of those who share your faith, and you can perform the religi"]}],"equip":"A holy symbol (a gift to you when you entered the priesthood), a prayer book or prayer wheel, 5 sticks of incense, vestments, a set of common clothes,"},{"n":"Caravan Specialist","prof":"Animal Handling, Survival","skills":["Animal Handling","Survival"],"traits":[{"n":"Overview","tx":["You are used to life on the road. You pride yourself at having traveled every major trade way in the"]},{"n":"Skill Proficiencies","tx":["Animal Handling, Survival"]},{"n":"Tool Proficiencies","tx":["Land vehicles"]},{"n":"Languages","tx":["One of your choice"]},{"n":"Equipment","tx":["A whip, a tent, a regional map, a set of traveling clothes, and a belt pouch containing 10 gp"]}],"equip":"A whip, a tent, a regional map, a set of traveling clothes, and a belt pouch containing 10 gp"},{"n":"Charlatan","prof":"Deception, Sleight of Hand","skills":["Deception","Sleight of Hand"],"traits":[{"n":"Overview","tx":["You have always had a way with people. You know what makes them tick, you can tease out their hearts"]},{"n":"Skill Proficiencies","tx":["Deception, Sleight of Hand"]},{"n":"Tool Proficiencies","tx":["Disguise Kit, Forgery Kit"]},{"n":"Equipment","tx":["A set of fine clothes, a disguise kit, tools of the con of your choice (ten stoppered bottles filled"]},{"n":"Feature: False Identity","tx":["You have created a second identity that includes documentation, established acquaintances, and disgu"]}],"equip":"A set of fine clothes, a disguise kit, tools of the con of your choice (ten stoppered bottles filled with colored liquid, a set of weighted dice, a de"},{"n":"City Watch","prof":"Athletics, Insight","skills":["Athletics","Insight"],"traits":[{"n":"Overview","tx":["You have served the community where you grew up, standing as its first line of defense against crime"]},{"n":"Skill Proficiencies","tx":["Athletics, Insight"]},{"n":"Languages","tx":["Any two of your choice"]},{"n":"Equipment","tx":["A uniform in the style of your unit and indicative of your rank, a horn with which to summon help, a"]},{"n":"Feature: Watcher's Eye","tx":["Your experience in enforcing the law, and dealing with lawbreakers, gives you a feel for local laws "]}],"equip":"A uniform in the style of your unit and indicative of your rank, a horn with which to summon help, a set of manacles, and a pouch containing 10 gp."},{"n":"Clan Crafter","prof":"History, Insight","skills":["History","Insight"],"traits":[{"n":"Overview","tx":["The Stout Folk are well known for their artisanship and the worth of their handiworks, and you have "]},{"n":"Skill Proficiencies","tx":["History, Insight"]},{"n":"Tool Proficiencies","tx":["One type of artisan's tools"]},{"n":"Languages","tx":["Dwarvish or one of your choice if you already speak Dwarvish"]},{"n":"Equipment","tx":["A set of artisan's tools with which you are proficient, a maker's mark chisel used to mark your hand"]}],"equip":"A set of artisan's tools with which you are proficient, a maker's mark chisel used to mark your handiwork with the symbol of the clan of crafters you "},{"n":"Cloistered Scholar","prof":"History","skills":["History"],"traits":[{"n":"Overview","tx":["As a child, you were inquisitive when your playmates were possessive or raucous. In your formative y"]},{"n":"Skill Proficiencies","tx":["History, plus your choice of one from among Arcana, Nature, and Religion"]},{"n":"Languages","tx":["Languages: any two of your choice"]},{"n":"Equipment","tx":["The scholar's robes of your cloister, a writing kit (small pouch with a quill, ink, folded parchment"]},{"n":"Feature: Library Access","tx":["Though others must often endure extensive interviews and significant fees to gain access to even the"]}],"equip":"The scholar's robes of your cloister, a writing kit (small pouch with a quill, ink, folded parchment, and a small penknife), a borrowed book on the su"},{"n":"Cormanthor Refugee","prof":"Nature, Survival","skills":["Nature","Survival"],"traits":[{"n":"Overview","tx":["You are one of hundreds of refugees that were driven from Hillsfar or that fled the destruction of M"]},{"n":"Skill Proficiencies","tx":["Nature, Survival"]},{"n":"Tool Proficiencies","tx":["One type of artisan's tools"]},{"n":"Languages","tx":["Elven"]},{"n":"Equipment","tx":["A two-person tent, artisan's tools, a holy symbol, a set of traveler's clothes, a belt pouch, 5 gp"]}],"equip":"A two-person tent, artisan's tools, a holy symbol, a set of traveler's clothes, a belt pouch, 5 gp"},{"n":"Courtier","prof":"Insight, Persuasion","skills":["Insight","Persuasion"],"traits":[{"n":"Overview","tx":["In your earlier days, you were a personage of some significance in a noble court or a bureaucratic o"]},{"n":"Skill Proficiencies","tx":["Insight, Persuasion"]},{"n":"Languages","tx":["Any two of your choice"]},{"n":"Equipment","tx":["A set of fine clothes and a pouch containing 5 gp."]},{"n":"Feature: Court Functionary","tx":["Your knowledge of how bureaucracies function lets you gain access to the records and inner workings "]}],"equip":"A set of fine clothes and a pouch containing 5 gp."},{"n":"Criminal","prof":"Deception, Stealth","skills":["Deception","Stealth"],"traits":[{"n":"Overview","tx":["You are an experienced criminal with a history of breaking the law. You have spent a lot of time amo"]},{"n":"Skill Proficiencies","tx":["Deception, Stealth"]},{"n":"Tool Proficiencies","tx":["One type of gaming set, thieves' tools"]},{"n":"Equipment","tx":["A crowbar, a set of dark common clothes including a hood, and a belt pouch containing 15 gp"]},{"n":"Feature: Criminal Contact","tx":["You have a reliable and trustworthy contact who acts as your liaison to a network of other criminals"]}],"equip":"A crowbar, a set of dark common clothes including a hood, and a belt pouch containing 15 gp"},{"n":"Dissenter Initiate","prof":"Athletics, Intimidation","skills":["Athletics","Intimidation"],"traits":[{"n":"Description","tx":["Even in the carefully constructed and curated city-state of Naktamun, and in the presence of the fiv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Athletics, Intimidation\n \nLanguage"]},{"n":"Shelter of Dissenters","tx":["If they wish to have any hope of survival, whether hiding within the city or cast out into the deser"]},{"n":"Equipment","tx":["a simple puzzle box, a scroll containing the basic teachings of the five gods, a gaming set, a set o"]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I always have a joke on hand when the mood gets too serious.\n \n2."]}],"equip":"a simple puzzle box, a scroll containing the basic teachings of the five gods, a gaming set, a set of common clothes, and a belt pouch containing 15 g"},{"n":"Dissenter Vizier","prof":"History, Religion","skills":["History","Religion"],"traits":[{"n":"Description","tx":["Even in the carefully constructed and curated city-state of Naktamun, and in the presence of the fiv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: History, Religion\n \nLanguages: non"]},{"n":"Shelter of Dissenters","tx":["If they wish to have any hope of survival, whether hiding within the city or cast out into the deser"]},{"n":"Equipment","tx":["a set of artisan’s tools or a musical instrument (one of your choice), a scroll of your god’s teachi"]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. Everything I do, I do gracefully and deliberately, and with compl"]}],"equip":"a set of artisan’s tools or a musical instrument (one of your choice), a scroll of your god’s teachings, a vizier’s cartouche, a set of fine clothes, "},{"n":"Earthspur Miner","prof":"Athletics, Survival","skills":["Athletics","Survival"],"traits":[{"n":"Overview","tx":["You are a down-on your luck miner from the Earthspur Mountains who is no stranger to hardship. You h"]},{"n":"Skill Proficiencies","tx":["Athletics, Survival"]},{"n":"Languages","tx":["Dwarven and Undercommon"]},{"n":"Equipment","tx":["A shovel or a miner's pick, a block and tackle, a climber's kit, a set of common clothes, and a belt"]},{"n":"Starting Lifestyle","tx":["Poor"]}],"equip":"A shovel or a miner's pick, a block and tackle, a climber's kit, a set of common clothes, and a belt pouch containing 5 gp"},{"n":"Entertainer","prof":"Acrobatics, Performance","skills":["Acrobatics","Performance"],"traits":[{"n":"Overview","tx":["You thrive in front of an audience. You know how to entrance them, entertain them, and even inspire "]},{"n":"Skill Proficiencies","tx":["Acrobatics, Performance"]},{"n":"Tool Proficiencies","tx":["Disguise kit, one type of musical instrument"]},{"n":"Equipment","tx":["A musical instrument (one of your choice), the favor of an admirer (love letter, lock of hair, or tr"]},{"n":"Feature: By Popular Demand","tx":["You can always find a place to perform, usually in an inn or tavern but possibly with a circus, at a"]}],"equip":"A musical instrument (one of your choice), the favor of an admirer (love letter, lock of hair, or trinket), a costume, and a belt pouch containing 15 "},{"n":"Faction Agent","prof":"Insight","skills":["Insight"],"traits":[{"n":"Overview","tx":["Many organizations active in the North and across the face of Faerûn aren't bound by strictures of g"]},{"n":"Skill Proficiencies","tx":["Insight and one Intelligence, Wisdom, or Charisma skill of your choice, as appropriate to your facti"]},{"n":"Languages","tx":["Any two of your choice"]},{"n":"Equipment","tx":["Badge or emblem of your faction, a copy of a seminal faction text (or code-book for a covert faction"]},{"n":"Feature: Safe Haven","tx":["As a faction agent, you have access to a secret network of supporters and operatives who can provide"]}],"equip":"Badge or emblem of your faction, a copy of a seminal faction text (or code-book for a covert faction), a set of common clothes, and a pouch containing"},{"n":"Far Traveler","prof":"Insight, Perception","skills":["Insight","Perception"],"traits":[{"n":"Overview","tx":["Almost all of the common people and other folk that one might encounter along the Sword Coast or in "]},{"n":"Skill Proficiencies","tx":["Insight, Perception"]},{"n":"Tool Proficiencies","tx":["Any one musical instrument or gaming set of your choice, likely something native to your homeland"]},{"n":"Languages","tx":["Any one of your choice"]},{"n":"Equipment","tx":["One set of traveler's clothes, any one musical instrument or gaming set you are proficient with, poo"]}],"equip":"One set of traveler's clothes, any one musical instrument or gaming set you are proficient with, poorly wrought maps from your homeland that depict wh"},{"n":"Folk Hero","prof":"Animal Handling, Survival","skills":["Animal Handling","Survival"],"traits":[{"n":"Overview","tx":["You come from a humble social rank, but you are destined for so much more. Already the people of you"]},{"n":"Skill Proficiencies","tx":["Animal Handling, Survival"]},{"n":"Tool Proficiencies","tx":["One type of artisan's tools, vehicles (land)"]},{"n":"Equipment","tx":["A set of artisan's tools (one of your choice), a shovel, an iron pot, a set of common clothes, and a"]},{"n":"Feature: Rustic Hospitality","tx":["Since you come from the ranks of the common folk, you fit in among them with ease. You can find a pl"]}],"equip":"A set of artisan's tools (one of your choice), a shovel, an iron pot, a set of common clothes, and a belt pouch containing 10 gp"},{"n":"Gate Urchin","prof":"Deception, Sleight of Hand","skills":["Deception","Sleight of Hand"],"traits":[{"n":"Overview","tx":["All traffic into and out of the City of Trade passes through the Hillsfar Gate, making it the ideal "]},{"n":"Skill Proficiencies","tx":["Athletics, Survival"]},{"n":"Tool Proficiencies","tx":["Thieves' tools, one type of musical instrument"]},{"n":"Equipment","tx":["A battered alms box, a musical instrument, a cast-off military jacket, cap, or scarf, a set of commo"]},{"n":"Starting Lifestyle","tx":["Poor"]}],"equip":"A battered alms box, a musical instrument, a cast-off military jacket, cap, or scarf, a set of common clothes, a belt pouch, and 10 gp"},{"n":"Guild Artisan","prof":"Insight, Persuasion","skills":["Insight","Persuasion"],"traits":[{"n":"Overview","tx":["You are a member of an artisan's guild, skilled in a particular field and closely associated with ot"]},{"n":"Skill Proficiencies","tx":["Insight, Persuasion"]},{"n":"Tool Proficiencies","tx":["One type of artisan's tools"]},{"n":"Equipment","tx":["A set of artisan's tools (one of your choice), a letter of introduction from your guild, a set of tr"]},{"n":"Feature: Guild Membership","tx":["As an established and respected member of a guild, you can rely on certain benefits that membership "]}],"equip":"A set of artisan's tools (one of your choice), a letter of introduction from your guild, a set of traveler's clothes, and a belt pouch containing 15 g"},{"n":"Harborfolk","prof":"Athletics, Sleight of Hand","skills":["Athletics","Sleight of Hand"],"traits":[{"n":"Overview","tx":["You are one of the hundreds of small-time fishermen and women who haul the bounty of Mulmaster's fre"]},{"n":"Skill Proficiencies","tx":["Athletics, Sleight of Hand"]},{"n":"Tool Proficiencies","tx":["One type of gaming set, water vehicles"]},{"n":"Equipment","tx":["Fishing tackle, dice set, playing card set, or Three Dragon Ante set, a set of common clothes, rowbo"]},{"n":"Starting Lifestyle","tx":["Poor"]}],"equip":"Fishing tackle, dice set, playing card set, or Three Dragon Ante set, a set of common clothes, rowboat, and a belt containing 5 gp"},{"n":"Haunted One","prof":"","skills":[],"traits":[{"n":"Overview","tx":["You are haunted by something so terrible that you dare not speak of it. You've tried to bury it and "]},{"n":"Feature: Harrowing Event","tx":["Prior to becoming an adventurer, your path in life was defined by one dark moment, one fateful decis"]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n1. I don't run from evil. Evil runs from me. \n \n2. I like to read and "]},{"n":"Ideal","tx":["Choose or randomly determine\n\n1. I try to help those in need, no matter what the personal cost. (Goo"]},{"n":"Bond","tx":["Choose or randomly determine\n\n1. I keep my thoughts and discoveries in a journal. My journal is my l"]}],"equip":"Monster hunter's pack, one trinket of special significance (choose one or roll on the Gothic Trinkets table)"},{"n":"Hermit","prof":"Medicine, Religion","skills":["Medicine","Religion"],"traits":[{"n":"Skill Proficiencies","tx":["Medicine, Religion"]},{"n":"Tool Proficiencies","tx":["Herbalism Kit"]},{"n":"Languages","tx":["One of your choice"]},{"n":"Equipment","tx":["A scroll case stuffed full of notes from your studies or prayers, a winter blanket, a set of common "]},{"n":"Feature: Discovery","tx":["The quiet seclusion of your extended hermitage gave you access to a unique and powerful discovery. T"]}],"equip":"A scroll case stuffed full of notes from your studies or prayers, a winter blanket, a set of common clothes, an herbalism kit, and 5 gp"},{"n":"Hillsfar Merchant","prof":"Insight, Persuasion","skills":["Insight","Persuasion"],"traits":[{"n":"Overview","tx":["Before becoming an adventurer, you were a successful merchant operating out Hillsfar, the City of Tr"]},{"n":"Skill Proficiencies","tx":["Insight, Persuasion"]},{"n":"Tool Proficiencies","tx":["Land vehicles and water vehicles"]},{"n":"Equipment","tx":["A fine set of clothes, a signet ring, a letter of introduction from your family's trading house, and"]},{"n":"Starting Lifestyle","tx":["Wealthy"]}],"equip":"A fine set of clothes, a signet ring, a letter of introduction from your family's trading house, and a purse containing 25 gp"},{"n":"Hillsfar Smuggler","prof":"Perception, Stealth","skills":["Perception","Stealth"],"traits":[{"n":"Overview","tx":["Hillsfar is the City of Trade. However, the Great Law of Trade only protects \"legitimate\" trade, tra"]},{"n":"Skill Proficiencies","tx":["Perception, Stealth"]},{"n":"Tool Proficiencies","tx":["Forgery kit"]},{"n":"Languages","tx":["One racial language"]},{"n":"Equipment","tx":["A forgery kit, a set of common clothes, a belt pouch, and 5 gp"]}],"equip":"A forgery kit, a set of common clothes, a belt pouch, and 5 gp"},{"n":"House Cannith Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Deneith Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Ghallanda Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Jorasco Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Kundarak Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Lyrandar Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Medani Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Orien Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Phiarlan Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Sivis Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Tharashk Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Thuranni Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"House Vadalis Agent","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Description","tx":["You have sworn fealty to a Dragonmarked House, one of the mighty mercantile guilds that shapes Khorv"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Persuasion\n \nLangua"]},{"n":"House Connections","tx":["Source: Wayfinder's Guide to Eberron, Chapter 4"]},{"n":"Equipment","tx":["A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I never let emotion complicate work.\n \n2. I’m always looking to i"]}],"equip":"A set of fine clothes, house signet ring, ID papers, and a purse containing 20 gp."},{"n":"Inheritor","prof":"Survival","skills":["Survival"],"traits":[{"n":"Overview","tx":["You are the heir to something of great value — not mere coin or wealth, but an object that has been "]},{"n":"Skill Proficiencies","tx":["Survival, plus one from among Arcana, History, and Religion"]},{"n":"Languages","tx":["Any one of your choice"]},{"n":"Tool Proficiencies","tx":["Your choice of a gaming set or a musical instrument"]},{"n":"Equipment","tx":["Your inheritance, a set of traveler's clothes, any items with which you are proficient, and a pouch "]}],"equip":"Your inheritance, a set of traveler's clothes, any items with which you are proficient, and a pouch containing 15 gp."},{"n":"Initiate","prof":"Athletics, Intimidation","skills":["Athletics","Intimidation"],"traits":[{"n":"Description","tx":["You are an initiate, on the path to completing the trials of the five gods in the hope of earning a "]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Athletics, Intimidation\n \nLanguage"]},{"n":"Trial of the Five Gods","tx":["Your life is oriented around your participation in the five trials that will determine your worthine"]},{"n":"Equipment","tx":["a simple puzzle box, a scroll containing the basic teachings of the five gods, a gaming set, a set o"]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. I always have a joke on hand when the mood gets too serious.\n \n2."]}],"equip":"a simple puzzle box, a scroll containing the basic teachings of the five gods, a gaming set, a set of common clothes, and a belt pouch containing 15 g"},{"n":"Inquisitor","prof":"Investigation, Religion","skills":["Investigation","Religion"],"traits":[{"n":"Description","tx":["Historically, inquisitors were cathar detectives who investigated crimes both mundane and supernatur"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: Investigation, Religion\n \nLanguage"]},{"n":"Legal Authority","tx":["As an inquisitor of the church, you have the authority to arrest criminals. In the absence of other "]},{"n":"Equipment","tx":["a holy symbol, a set of traveler’s clothes, and a belt pouch containing 15 gp"]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. It will all go smoothly if everyone just does as I say.\n \n2. Desp"]}],"equip":"a holy symbol, a set of traveler’s clothes, and a belt pouch containing 15 gp"},{"n":"Investigator","prof":"Insight, Investigation","skills":["Insight","Investigation"],"traits":[{"n":"Skill Proficiencies","tx":["Insight, Investigation"]},{"n":"Languages","tx":["Any two of your choice"]},{"n":"Equipment","tx":["A uniform in the style of your unit and indicative of your rank, a horn with which to summon help, a"]},{"n":"Feature: Watcher's Eye","tx":["Your experience in enforcing the law, and dealing with lawbreakers, gives you a feel for local laws "]}],"equip":"A uniform in the style of your unit and indicative of your rank, a horn with which to summon help, a set of manacles, and a pouch containing 10 gp."},{"n":"Knight of the Order","prof":"Persuasion","skills":["Persuasion"],"traits":[{"n":"Overview","tx":["You belong to an order of knights who have sworn oaths to achieve a certain goal. The nature of this"]},{"n":"Skill Proficiencies","tx":["Persuasion, plus one from among Arcana, History, Nature, and Religion, as appropriate for your order"]},{"n":"Tool Proficiencies","tx":["Your choice of a gaming set or a musical instrument"]},{"n":"Languages","tx":["Any one of your choice"]},{"n":"Equipment","tx":["One set of traveler's clothes, a signet, banner, or seal representing your place or rank in the orde"]}],"equip":"One set of traveler's clothes, a signet, banner, or seal representing your place or rank in the order, and a pouch containing 10 gp."},{"n":"Mercenary Veteran","prof":"Athletics, Persuasion","skills":["Athletics","Persuasion"],"traits":[{"n":"Overview","tx":["As a sell-sword who fought battles for coin, you're well acquainted with risking life and limb for a"]},{"n":"Skill Proficiencies","tx":["Athletics, Persuasion"]},{"n":"Tool Proficiencies","tx":["One type of gaming set, vehicles (land)"]},{"n":"Equipment","tx":["A uniform of your company (traveler's clothes in quality), an insignia of your rank, a gaming set of"]},{"n":"Feature: Mercenary Life","tx":["You know the mercenary life as only someone who has experienced it can. You are able to identify mer"]}],"equip":"A uniform of your company (traveler's clothes in quality), an insignia of your rank, a gaming set of your choice, and a pouch containing the remainder"},{"n":"Mulmaster Aristocrat","prof":"Deception, Performance","skills":["Deception","Performance"],"traits":[{"n":"Description","tx":["From your hilltop home, you have looked down (literally and perhaps figuratively) on the unwashed ma"]},{"n":"Skill Proficiencies","tx":["Deception, Performance"]},{"n":"Tool Proficiencies","tx":["One type of artistic artisan's tools and one musical instrument"]},{"n":"Equipment","tx":["One set of artisan's tools or musical instrument, a set of fine clothes, and a purse containing 10 g"]},{"n":"Starting Lifestyle","tx":["Wealthy"]}],"equip":"One set of artisan's tools or musical instrument, a set of fine clothes, and a purse containing 10 gp"},{"n":"Noble","prof":"History, Persuasion","skills":["History","Persuasion"],"traits":[{"n":"Description","tx":["You understand wealth, power, and privilege. You carry a noble title, and your family owns land, col"]},{"n":"Skill Proficiencies","tx":["History, Persuasion"]},{"n":"Tool Proficiencies","tx":["One type of gaming set"]},{"n":"Languages","tx":["One of your choice"]},{"n":"Equipment","tx":["A set of fine clothes, a signet ring, a scroll of pedigree, and a purse containing 25 gp"]}],"equip":"A set of fine clothes, a signet ring, a scroll of pedigree, and a purse containing 25 gp"},{"n":"Outlander","prof":"Athletics, Survival","skills":["Athletics","Survival"],"traits":[{"n":"Description","tx":["You grew up in the wilds, far from civilization and the comforts of town and technology. You've witn"]},{"n":"Skill Proficiencies","tx":["Athletics, Survival"]},{"n":"Tool Proficiencies","tx":["One type of musical instrument"]},{"n":"Languages","tx":["One of your choice"]},{"n":"Equipment","tx":["A staff, a hunting trap, a trophy from an animal you killed, a set of traveler's clothes, and a belt"]}],"equip":"A staff, a hunting trap, a trophy from an animal you killed, a set of traveler's clothes, and a belt pouch containing 10 gp"},{"n":"Phlan Refugee","prof":"Athletics, Insight","skills":["Athletics","Insight"],"traits":[{"n":"Description","tx":["Gone are the happier days of walking into the Laughing Goblin Inn after a hard day's labor. Everythi"]},{"n":"Skill Proficiencies","tx":["Insight, Athletics"]},{"n":"Tool Proficiencies","tx":["One type of artisan's tools"]},{"n":"Languages","tx":["One of your choice"]},{"n":"Equipment","tx":["A set of artisan’s tools (one of your choice), a token of the life you once knew, a set of traveler’"]}],"equip":"A set of artisan’s tools (one of your choice), a token of the life you once knew, a set of traveler’s clothes, and a belt pouch containing 15 gps"},{"n":"Sage","prof":"Arcana, History","skills":["Arcana","History"],"traits":[{"n":"Description","tx":["You spent years learning the lore of the multiverse. You scoured manuscripts, studied scrolls, and l"]},{"n":"Skill Proficiencies","tx":["Arcana, History"]},{"n":"Languages","tx":["Two of your choice"]},{"n":"Equipment","tx":["A bottle of black ink, a quill, a small knife, a letter from a dead colleague posing a question you "]},{"n":"Feature: Researcher","tx":["When you attempt to learn or recall a piece of lore, if you do not know that information, you often "]}],"equip":"A bottle of black ink, a quill, a small knife, a letter from a dead colleague posing a question you have not yet been able to answer, a set of common "},{"n":"Sailor","prof":"Athletics, Perception","skills":["Athletics","Perception"],"traits":[{"n":"Description","tx":["You sailed on a seagoing vessel for years. In that time, you faced down mighty storms, monsters of t"]},{"n":"Skill Proficiencies","tx":["Athletics, Perception"]},{"n":"Tool Proficiencies","tx":["Navigator's tools, vehicles(water)"]},{"n":"Equipment","tx":["A belaying pin (dub), 50 feet of silk rope, a lucky charm such as a rabbit foot or a small stone wit"]},{"n":"Feature: Ship's Passage","tx":["When you need to, you can secure free passage on a sailing ship for yourself and your adventuring co"]}],"equip":"A belaying pin (dub), 50 feet of silk rope, a lucky charm such as a rabbit foot or a small stone with a hole in the center (or you may roll for a rand"},{"n":"Secret Identity","prof":"Deception, Stealth","skills":["Deception","Stealth"],"traits":[{"n":"Description","tx":["Even though you are a non-human, despite Hillsfar's Great Law of Humanity, you continue to live in t"]},{"n":"Skill Proficiencies","tx":["Deception, Stealth"]},{"n":"Tool Proficiencies","tx":["Disguise kit, forgery kit"]},{"n":"Equipment","tx":["A disguise kit, a forgery kit, a set of common clothes, a belt pouch, 5 gp"]},{"n":"Starting Lifestyle","tx":["Modest"]}],"equip":"A disguise kit, a forgery kit, a set of common clothes, a belt pouch, 5 gp"},{"n":"Shade Fanatic","prof":"Deception, Intimidation","skills":["Deception","Intimidation"],"traits":[{"n":"Description","tx":["You grew up at a time when the wizards of Netheril were at war with the elves of Cormanthor. You rec"]},{"n":"Skill Proficiencies","tx":["Deception, Intimidation"]},{"n":"Tool Proficiencies","tx":["Forgery kit"]},{"n":"Languages","tx":["Netherese"]},{"n":"Equipment","tx":["A forgery kit, a transparent cylinder of shadow that has no opening, a signet ring, a set of fine cl"]}],"equip":"A forgery kit, a transparent cylinder of shadow that has no opening, a signet ring, a set of fine clothes, and 15 gp"},{"n":"Soldier","prof":"Athletics, Intimidation","skills":["Athletics","Intimidation"],"traits":[{"n":"Skill Proficiencies","tx":["Athletics, Intimidation"]},{"n":"Tool Proficiencies","tx":["One type of gaming set, vehicles (land)"]},{"n":"Equipment","tx":["An insignia of rank, a trophy taken from a fallen enemy (a dagger, broken blade, or piece of a banne"]},{"n":"Feature: Military Rank","tx":["You have a military rank from your career as a soldier. Soldiers loyal to your former military organ"]},{"n":"Role","tx":["1\tOfficer\n2\tScout\n3\tInfantry\n4\tCavalry\n5\tHealer\n6\tQuartermaster\n7\tStandard-bearer\n8\tSupport staff (c"]}],"equip":"An insignia of rank, a trophy taken from a fallen enemy (a dagger, broken blade, or piece of a banner), a set of bone dice or deck of cards, a set of "},{"n":"Trade Sherrif","prof":"Investigation, Persuasion","skills":["Investigation","Persuasion"],"traits":[{"n":"Overview","tx":["You are one of the many people that make sure the trade routes are clear at ALL times. You assure th"]},{"n":"Skill Proficiencies","tx":["Investigation, Persuasion"]},{"n":"Tool Proficiencies","tx":["Thieves kit"]},{"n":"Languages","tx":["Elven"]},{"n":"Equipment","tx":["A thieves kit, a gray cloak, Sherrif's insignia (badge), a set of fine clothes, and 17 gp"]}],"equip":"A thieves kit, a gray cloak, Sherrif's insignia (badge), a set of fine clothes, and 17 gp"},{"n":"Urban Bounty Hunter","prof":"","skills":[],"traits":[{"n":"Overview","tx":["Before you became an adventurer, your life was already full of conflict and excitement, because you "]},{"n":"Skill Proficiencies","tx":["Choose two from among Deception, Insight, Persuasion, and Stealth"]},{"n":"Tool Proficiencies","tx":["Choose two from among one type of gaming set, one musical instrument, and thieves's tools"]},{"n":"Equipment","tx":["A set of clothes appropriate to your duties and a pouch containing 20 gp"]},{"n":"Feature: Ear to the Ground","tx":["You are in frequent contact with people in the segment of society that your chosen quarries move thr"]}],"equip":"A set of clothes appropriate to your duties and a pouch containing 20 gp"},{"n":"Urchin","prof":"Sleight of Hand, Stealth","skills":["Sleight of Hand","Stealth"],"traits":[{"n":"Overview","tx":["You grew up on the streets alone, orphaned, and poor. You had no one to watch over you or to provide"]},{"n":"Skill Proficiencies","tx":["Sleight of Hand, Stealth"]},{"n":"Tool Proficiencies","tx":["Disguise Kit, thieves' tools"]},{"n":"Equipment","tx":["A small knife, a map of the city you grew up in, a pet mouse, a token to remember your parents by, a"]},{"n":"Feature: City Secrets","tx":["You know the secret patterns and flow to cities and can find passages through the urban sprawl that "]}],"equip":"A small knife, a map of the city you grew up in, a pet mouse, a token to remember your parents by, a set of common clothes, and a belt pouch containin"},{"n":"Uthgardt Tribe Member","prof":"Athletics, Survival","skills":["Athletics","Survival"],"traits":[{"n":"Overview","tx":["Though you might have only recently arrived in civilized lands, you are no stranger to the values of"]},{"n":"Skill Proficiencies","tx":["Athletics, Survival"]},{"n":"Languages","tx":["Any one of your choice"]},{"n":"Tool Proficiencies","tx":["One type of musical instrument or artisan's tools"]},{"n":"Equipment","tx":["A hunting trap, a totemic token or set of tattoos marking your loyalty to Uthgar and your tribal tot"]}],"equip":"A hunting trap, a totemic token or set of tattoos marking your loyalty to Uthgar and your tribal totem, a set of traveler's clothes, and a pouch conta"},{"n":"Variant Criminal (Spy)","prof":"Deception, Stealth","skills":["Deception","Stealth"],"traits":[{"n":"Skill Proficiencies","tx":["Deception, Stealth"]},{"n":"Tool Proficiencies","tx":["One type of gaming set, thief's tools"]},{"n":"Equipment","tx":["A crowbar, a set of dark common clothes including a hood, and a belt pouch containing 15 gp"]},{"n":"Feature: Spy Contact","tx":["You have a reliable and trustworthy contact who acts as your liaison to a network of other spies. Yo"]}],"equip":"A crowbar, a set of dark common clothes including a hood, and a belt pouch containing 15 gp"},{"n":"Variant Entertainer (Gladiator)","prof":"Acrobatics, Performance","skills":["Acrobatics","Performance"],"traits":[{"n":"Skill Proficiencies","tx":["Acrobatics, Performance"]},{"n":"Tool Proficiencies","tx":["Disguise kit, one type of musical instrument"]},{"n":"Equipment","tx":["An inexpensive but unusual weapon, such as a trident or net (one of your choice), the favor of an ad"]},{"n":"Feature: By Popular Demand","tx":["You can find a place to perform in any place that features combat for entertainment-perhaps a gladia"]}],"equip":"An inexpensive but unusual weapon, such as a trident or net (one of your choice), the favor of an admirer (love letter, lock of hair, or trinket), a c"},{"n":"Variant Guild Artisan (Guild Merchant)","prof":"Insight, Persuasion","skills":["Insight","Persuasion"],"traits":[{"n":"Skill Proficiencies","tx":["Insight, Persuasion"]},{"n":"Tool Proficiencies","tx":["Navigator's Tools or an additional language"]},{"n":"Equipment","tx":["A mule and cart, a letter of introduction from your guild, a set of traveler's clothes, and a belt p"]},{"n":"Feature: Guild Membership","tx":["As an established and respected member of a guild or large merchant consortium, you can rely on cert"]}],"equip":"A mule and cart, a letter of introduction from your guild, a set of traveler's clothes, and a belt pouch containing 15 gp"},{"n":"Variant Noble (Knight)","prof":"History, Persuasion","skills":["History","Persuasion"],"traits":[{"n":"Skill Proficiencies","tx":["History, Persuasion"]},{"n":"Tool Proficiencies","tx":["One type of gaming set"]},{"n":"Languages","tx":["One of your choice"]},{"n":"Equipment","tx":["A banner or other token from a noble lord or lady to whom you have given your heart, a set of fine c"]},{"n":"Feature: Retainers","tx":["You have the service of three retainers loyal to your family. These retainers can be attendants or m"]}],"equip":"A banner or other token from a noble lord or lady to whom you have given your heart, a set of fine clothes, a signet ring, a scroll of pedigree, and a"},{"n":"Variant Sailor (Pirate)","prof":"Athletics, Perception","skills":["Athletics","Perception"],"traits":[{"n":"Skill Proficiencies","tx":["Athletics, Perception"]},{"n":"Tool Proficiencies","tx":["Navigator's tools, vehicles(water)"]},{"n":"Equipment","tx":["A belaying pin (dub), 50 feet of silk rope, a lucky charm such as a rabbit foot or a small stone wit"]},{"n":"Feature: Bad Reputation","tx":["No matter where you go, people are afraid of you due to your reputation. When you are in a civilized"]}],"equip":"A belaying pin (dub), 50 feet of silk rope, a lucky charm such as a rabbit foot or a small stone with a hole in the center (or you may roll for a rand"},{"n":"Vizier","prof":"History, Religion","skills":["History","Religion"],"traits":[{"n":"Description","tx":["You are a vizier, a servant of your god. You perform tasks that are essential to facilitating the in"]},{"n":"Starting Proficiencies","tx":["Your background grants you the following proficiencies.\n \nSkills: History, Religion\n \nLanguages: non"]},{"n":"Voice of Authority","tx":["Your voice is the voice of your god, at least in theory. Your job might include training and instruc"]},{"n":"Equipment","tx":["a set of artisan’s tools or a musical instrument (one of your choice), a scroll of your god’s teachi"]},{"n":"Personality Trait","tx":["Choose or randomly determine\n\n \n1. Everything I do, I do gracefully and deliberately, and with compl"]}],"equip":"a set of artisan’s tools or a musical instrument (one of your choice), a scroll of your god’s teachings, a vizier’s cartouche, a set of fine clothes, "},{"n":"Waterdhavian Noble","prof":"History, Persuasion","skills":["History","Persuasion"],"traits":[{"n":"Overview","tx":["You are a scion of one of the great noble families of Waterdeep. Human families who jealously guard "]},{"n":"Skill Proficiencies","tx":["History, Persuasion"]},{"n":"Languages","tx":["Any one of your choice"]},{"n":"Tool Proficiencies","tx":["One type of gaming set or one musical instrument"]},{"n":"Equipment","tx":["A set of fine clothes, a signet ring or brooch, a scroll of pedigree, a skin of fine zzar or wine, a"]}],"equip":"A set of fine clothes, a signet ring or brooch, a scroll of pedigree, a skin of fine zzar or wine, and a purse containing 20 gp."}]};
+
+const STATS = ['STR','DEX','CON','INT','WIS','CHA'];
+const STAT_NAMES = {STR:'Fuerza',DEX:'Destreza',CON:'Constitución',INT:'Inteligencia',WIS:'Sabiduría',CHA:'Carisma'};
+const SKILL_DEF = [
+  {n:'Acrobatics',s:'DEX',es:'Acrobacias'},
+  {n:'Animal Handling',s:'WIS',es:'Adiestramiento'},
+  {n:'Arcana',s:'INT',es:'Arcanos'},
+  {n:'Athletics',s:'STR',es:'Atletismo'},
+  {n:'Deception',s:'CHA',es:'Engaño'},
+  {n:'History',s:'INT',es:'Historia'},
+  {n:'Insight',s:'WIS',es:'Intuición'},
+  {n:'Intimidation',s:'CHA',es:'Intimidación'},
+  {n:'Investigation',s:'INT',es:'Investigación'},
+  {n:'Medicine',s:'WIS',es:'Medicina'},
+  {n:'Nature',s:'INT',es:'Naturaleza'},
+  {n:'Perception',s:'WIS',es:'Percepción'},
+  {n:'Performance',s:'CHA',es:'Actuación'},
+  {n:'Persuasion',s:'CHA',es:'Persuasión'},
+  {n:'Religion',s:'INT',es:'Religión'},
+  {n:'Sleight of Hand',s:'DEX',es:'Juego de manos'},
+  {n:'Stealth',s:'DEX',es:'Sigilo'},
+  {n:'Survival',s:'WIS',es:'Supervivencia'},
+];
+const STANDARD_ARRAY = [15,14,13,12,10,8];
+const XP_TABLE = [0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let currentStep = 1;
+let currentUser = null;
+let editingId   = null; // if editing existing character
+
+const pc = {
+  nombre:'', nivel:1, alignment:'True Neutral',
+  age:'', gender:'', appearance:'', backstory:'',
+  race:null, class_:null, background:null,
+  base_stats:{STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10},
+  skills:{}, saveProfs:{},
+  // computed:
+  hp_max:10, hp_curr:10, ca:10, xp:0
+};
+
+let rollValues   = [];
+let selectedRoll = null;
+let rollMethod   = 'roll4d6';
+let pbPoints     = 27;
+const pbCost = {8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+const pbCostRev = {0:8,1:9,2:10,3:11,4:12,5:13,7:14,9:15};
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function modVal(v){ const m=Math.floor((v-10)/2); return (m>=0?'+':'')+m; }
+function profBonus(level){ if(level>=17)return 6;if(level>=13)return 5;if(level>=9)return 4;if(level>=5)return 3;return 2; }
+function effectiveStat(stat){
+  const base=pc.base_stats[stat]||10;
+  const racial=(pc.race?.bonus?.[stat])||0;
+  return base+racial;
+}
+function errEl(id){ return document.getElementById(id); }
+function setErr(id,msg){ const e=errEl(id); if(e) e.textContent=msg; }
+function clearErr(id){ const e=errEl(id); if(e) e.textContent=''; }
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function goStep(n){
+  if(n<1||n>7) return;
+  if(n>currentStep && !validateStep(currentStep)) return;
+  document.querySelectorAll('.step-panel').forEach((p,i)=>p.classList.toggle('active',i===n-1));
+  document.querySelectorAll('.step-item').forEach((s,i)=>{
+    s.classList.toggle('active',i===n-1);
+    s.classList.toggle('done',i<n-1);
+  });
+  currentStep=n;
+  document.getElementById('btn-prev').style.display = n>1?'inline-flex':'none';
+  document.getElementById('btn-next').style.display = n<7?'inline-flex':'none';
+  document.getElementById('btn-save').style.display = n===7?'inline-flex':'none';
+  if(n===2) renderRaceGrid();
+  if(n===3) renderClassGrid();
+  if(n===4) renderBgGrid();
+  if(n===5) renderStats();
+  if(n===6) renderSkills();
+  if(n===7) renderSummary();
+  updatePreview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function nextStep(){ goStep(currentStep+1); }
+function prevStep(){ goStep(currentStep-1); }
+function goBack(){
+  if(history.length>1) history.back();
+  else window.location.href='login.html';
+}
+
+function validateStep(n){
+  clearErr('err-'+n);
+  if(n===1){
+    if(!document.getElementById('pc-name').value.trim()){
+      setErr('err-1','El nombre del personaje es obligatorio.'); return false;
+    }
+    pc.nombre   = document.getElementById('pc-name').value.trim();
+    pc.nivel    = +document.getElementById('pc-level').value||1;
+    pc.age      = document.getElementById('pc-age').value;
+    pc.gender   = document.getElementById('pc-gender').value;
+    pc.appearance=document.getElementById('pc-appearance').value;
+    pc.backstory= document.getElementById('pc-backstory').value;
+    pc.xp       = XP_TABLE[pc.nivel-1]||0;
+    return true;
+  }
+  if(n===2){ if(!pc.race){ setErr('err-2','Selecciona una raza.'); return false; } return true; }
+  if(n===3){ if(!pc.class_){ setErr('err-3','Selecciona una clase.'); return false; } return true; }
+  if(n===4){ if(!pc.background){ setErr('err-4','Selecciona un trasfondo.'); return false; } return true; }
+  if(n===5){
+    const total = STATS.reduce((s,k)=>s+pc.base_stats[k],0);
+    if(total<60){ setErr('err-5','Asigna todos los atributos.'); return false; }
+    computeDerived(); return true;
+  }
+  if(n===6){ return true; }
+  return true;
+}
+
+// ═══════════════════════════════════════
+// STEP 1 — CONCEPT
+// ═══════════════════════════════════════
+function setAlign(a){
+  pc.alignment=a;
+  document.querySelectorAll('.align-btn').forEach(b=>b.classList.toggle('selected',b.dataset.align===a));
+  updatePreview();
+}
+
+// ═══════════════════════════════════════
+// STEP 2 — RACE
+// ═══════════════════════════════════════
+function filterRaces(){
+  const q=document.getElementById('race-search').value.toLowerCase();
+  renderRaceGrid(q);
+}
+
+function renderRaceGrid(q=''){
+  const el=document.getElementById('race-grid'); if(!el) return;
+  const races=CC_DATA.races.filter(r=>!q||r.n.toLowerCase().includes(q));
+  el.innerHTML=races.map((r,i)=>{
+    const bonuses=Object.entries(r.bonus||{}).map(([k,v])=>`${k} +${v}`).join(', ');
+    return `<div class="sel-card${pc.race?.n===r.n?' selected':''}" onclick="selectRace(${CC_DATA.races.indexOf(r)})">
+      <div class="sel-card-name">${r.n}</div>
+      <div class="sel-card-sub">Vel. ${r.spd}ft</div>
+      ${bonuses?`<div class="sel-card-badge">${bonuses}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function selectRace(i){
+  pc.race=CC_DATA.races[i];
+  renderRaceGrid(document.getElementById('race-search')?.value||'');
+  const el=document.getElementById('race-detail');
+  const r=pc.race;
+  const bonuses=Object.entries(r.bonus||{}).map(([k,v])=>`<span class="chip chip-gold">${STAT_NAMES[k]||k} +${v}</span>`).join('');
+  el.innerHTML=`<h3>${r.n}</h3>
+    <div class="bonus-chips">${bonuses||'<span class="chip chip-purple">Sin bonificadores de atributo</span>'}</div>
+    <div style="margin-top:10px;font-size:13px;color:var(--cream-m)">Velocidad: ${r.spd}ft · Tamaño: ${r.sz||'M'}</div>
+    ${r.lng?`<div style="font-size:12px;color:var(--cream-m);margin-top:4px">Idiomas: ${r.lng}</div>`:''}
+    <div class="section-divider" style="margin:12px 0"></div>
+    <div class="trait-list">${(r.traits||[]).slice(0,4).map(t=>`<div class="trait-item"><h4>${t.n}</h4><p>${(t.tx||[]).join(' ')}</p></div>`).join('')}</div>`;
+  if(currentStep===5) renderStats();
+  updatePreview();
+}
+
+// ═══════════════════════════════════════
+// STEP 3 — CLASS
+// ═══════════════════════════════════════
+function renderClassGrid(){
+  const el=document.getElementById('class-grid'); if(!el) return;
+  el.innerHTML=CC_DATA.classes.map((c,i)=>`
+    <div class="sel-card${pc.class_?.n===c.n?' selected':''}" onclick="selectClass(${i})">
+      <div class="sel-card-name">${c.n}</div>
+      <div class="sel-card-sub">d${c.hd} HP · ${c.saves?.join('/')||'?'} saves</div>
+      ${c.spellcaster?`<div class="sel-card-badge">✨ Lanzador de hechizos</div>`:''}
+    </div>`).join('');
+}
+
+function selectClass(i){
+  pc.class_=CC_DATA.classes[i];
+  renderClassGrid();
+  const c=pc.class_;
+  const el=document.getElementById('class-detail');
+  el.innerHTML=`<h3>${c.n}</h3>
+    <div class="bonus-chips">
+      <span class="chip chip-red">d${c.hd} Dado de golpe</span>
+      ${(c.saves||[]).map(s=>`<span class="chip chip-gold">ST ${s}</span>`).join('')}
+      ${c.spellcaster?'<span class="chip chip-purple">Lanzador de hechizos</span>':''}
+    </div>
+    ${c.prof?`<div style="font-size:12px;color:var(--cream-m);margin-top:10px">Competencias: ${c.prof}</div>`:''}
+    <div class="section-divider" style="margin:12px 0"></div>
+    <div class="trait-list">${(c.features||[]).slice(0,4).map(f=>`<div class="trait-item"><h4>${f.n}</h4><p>${(f.tx||[]).join(' ')}</p></div>`).join('')}</div>
+    ${c.equip?`<div class="section-divider" style="margin:10px 0"></div><div style="font-size:12px;color:var(--cream-m)"><strong style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold-d)">EQUIPO INICIAL</strong><br>${c.equip}</div>`:''}`;
+  if(currentStep===5) renderStats();
+  if(currentStep===6) renderSkills();
+  updatePreview();
+}
+
+// ═══════════════════════════════════════
+// STEP 4 — BACKGROUND
+// ═══════════════════════════════════════
+function filterBgs(){
+  const q=document.getElementById('bg-search').value.toLowerCase();
+  renderBgGrid(q);
+}
+
+function renderBgGrid(q=''){
+  const el=document.getElementById('bg-grid'); if(!el) return;
+  const bgs=CC_DATA.backgrounds.filter(b=>!q||b.n.toLowerCase().includes(q));
+  el.innerHTML=bgs.map(b=>{
+    const idx=CC_DATA.backgrounds.indexOf(b);
+    return `<div class="sel-card${pc.background?.n===b.n?' selected':''}" onclick="selectBg(${idx})">
+      <div class="sel-card-name">${b.n}</div>
+      ${b.skills?.length?`<div class="sel-card-sub">${b.skills.slice(0,2).join(', ')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function selectBg(i){
+  pc.background=CC_DATA.backgrounds[i];
+  // Auto-add background skill profs
+  (pc.background.skills||[]).forEach(s=>{ pc.skills[s]=true; });
+  renderBgGrid(document.getElementById('bg-search')?.value||'');
+  const b=pc.background;
+  const el=document.getElementById('bg-detail');
+  el.innerHTML=`<h3>${b.n}</h3>
+    <div class="bonus-chips">${(b.skills||[]).map(s=>`<span class="chip chip-green">${s}</span>`).join('')}</div>
+    <div class="section-divider" style="margin:12px 0"></div>
+    <div class="trait-list">${(b.traits||[]).slice(0,4).map(t=>`<div class="trait-item"><h4>${t.n}</h4><p>${(t.tx||[]).join(' ')}</p></div>`).join('')}</div>
+    ${b.equip?`<div style="font-size:12px;color:var(--cream-m);margin-top:10px">${b.equip}</div>`:''}`;
+  updatePreview();
+}
+
+// ═══════════════════════════════════════
+// STEP 5 — ATTRIBUTES
+// ═══════════════════════════════════════
+function setMethod(m){
+  rollMethod=m;
+  document.querySelectorAll('.method-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['roll4d6','standard','pointbuy','manual'][i]===m);
+  });
+  document.getElementById('roll-result').style.display=m==='roll4d6'?'flex':'none';
+  document.getElementById('pb-info').style.display=m==='pointbuy'?'flex':'none';
+  if(m==='roll4d6') doRoll();
+  if(m==='standard'){
+    const order=['STR','DEX','CON','INT','WIS','CHA'];
+    order.forEach((s,i)=>pc.base_stats[s]=STANDARD_ARRAY[i]);
+    renderStats();
+  }
+  if(m==='pointbuy'){
+    STATS.forEach(s=>pc.base_stats[s]=8);
+    pbPoints=27; renderStats();
+  }
+  if(m==='manual'){ renderStats(); }
+}
+
+function doRoll(){
+  rollValues=[];
+  for(let i=0;i<6;i++){
+    const dice=[1,2,3,4].map(()=>Math.ceil(Math.random()*6));
+    dice.sort((a,b)=>b-a);
+    rollValues.push({val:dice[0]+dice[1]+dice[2], used:false});
+  }
+  rollValues.sort((a,b)=>b.val-a.val);
+  selectedRoll=null;
+  renderRollChips();
+}
+
+function renderRollChips(){
+  const el=document.getElementById('roll-chips'); if(!el) return;
+  el.innerHTML=rollValues.map((r,i)=>`
+    <div class="roll-chip${r.used?' used':selectedRoll===i?' selected':''}"
+      onclick="${r.used?'':'clickRollChip('+i+')'}">${r.val}</div>`).join('');
+}
+
+function clickRollChip(i){
+  if(rollValues[i].used) return;
+  selectedRoll=i; renderRollChips();
+}
+
+function assignRollToStat(stat){
+  if(rollMethod==='roll4d6'&&selectedRoll!==null&&!rollValues[selectedRoll].used){
+    pc.base_stats[stat]=rollValues[selectedRoll].val;
+    rollValues[selectedRoll].used=true;
+    selectedRoll=null;
+    renderRollChips();
+  } else if(rollMethod==='pointbuy'){
+    // handled in stat input change
+  }
+  renderStats();
+}
+
+function renderStats(){
+  const el=document.getElementById('stats-grid'); if(!el) return;
+  el.innerHTML=STATS.map(s=>{
+    const base=pc.base_stats[s]||10;
+    const racial=(pc.race?.bonus?.[s])||0;
+    const total=base+racial;
+    const mStr=modVal(total);
+    return `<div class="stat-box" onclick="assignRollToStat('${s}')">
+      <div class="stat-name">${STAT_NAMES[s]}</div>
+      <input class="stat-input" type="number" min="3" max="20" value="${base}"
+        onchange="onStatChange('${s}',this.value)" onclick="event.stopPropagation()">
+      ${racial?`<div class="stat-racial">+${racial} raza</div>`:''}
+      <div class="stat-total">${total}</div>
+      <div class="stat-mod">${mStr}</div>
+    </div>`;
+  }).join('');
+  computeDerived();
+  updatePreview();
+}
+
+function onStatChange(stat, val){
+  const v=Math.max(3,Math.min(20,+val||10));
+  if(rollMethod==='pointbuy'){
+    // Recalculate points
+    const oldV=pc.base_stats[stat];
+    const oldCost=pbCost[Math.min(15,Math.max(8,oldV))]||0;
+    const newCost=pbCost[Math.min(15,Math.max(8,v))]||0;
+    const delta=newCost-oldCost;
+    if(pbPoints-delta<0){ return; } // can't afford
+    pbPoints-=delta;
+    document.getElementById('pb-points').textContent=pbPoints;
+  }
+  pc.base_stats[stat]=v;
+  renderStats();
+}
+
+function computeDerived(){
+  const dex=effectiveStat('DEX'), con=effectiveStat('CON');
+  const hd=+(pc.class_?.hd||8);
+  const level=pc.nivel||1;
+  const conMod=Math.floor((con-10)/2);
+  pc.hp_max=hd+conMod+(level-1)*(Math.ceil(hd/2)+1+conMod);
+  pc.hp_max=Math.max(1,pc.hp_max);
+  pc.hp_curr=pc.hp_max;
+  pc.ca=10+Math.floor((dex-10)/2);
+  const total=STATS.reduce((s,k)=>s+effectiveStat(k),0);
+  const dexMod=Math.floor((dex-10)/2);
+  const initStr=(dexMod>=0?'+':'')+dexMod;
+  const calcHp=document.getElementById('calc-hp');
+  const calcCa=document.getElementById('calc-ca');
+  const calcInit=document.getElementById('calc-init');
+  const calcTotal=document.getElementById('calc-total');
+  if(calcHp) calcHp.textContent=pc.hp_max;
+  if(calcCa) calcCa.textContent=pc.ca;
+  if(calcInit) calcInit.textContent=initStr;
+  if(calcTotal) calcTotal.textContent=total;
+}
+
+// ═══════════════════════════════════════
+// STEP 6 — SKILLS
+// ═══════════════════════════════════════
+function renderSkills(){
+  const el=document.getElementById('skills-grid'); if(!el) return;
+  const cls=pc.class_;
+  const bgSkills=new Set(pc.background?.skills||[]);
+  const clsSkills=new Set(cls?.skillChoices||[]);
+  const maxChoose=cls?.nSkills||2;
+  const chosenClass=SKILL_DEF.filter(s=>pc.skills[s.n]&&!bgSkills.has(s.n));
+  const info=document.getElementById('skill-info');
+  if(info) info.innerHTML=`<div class="bonus-chips">
+    <span class="chip chip-purple">Elige ${maxChoose} pericias de clase</span>
+    <span class="chip chip-green">+${bgSkills.size} de trasfondo (incluidas)</span>
+    ${chosenClass.length?`<span class="chip chip-gold">${chosenClass.length}/${maxChoose} elegidas</span>`:''}
+  </div>`;
+  const prof=profBonus(pc.nivel||1);
+  el.innerHTML=SKILL_DEF.map(sk=>{
+    const isBg=bgSkills.has(sk.n);
+    const isCls=clsSkills.has(sk.n);
+    const isChosen=!!pc.skills[sk.n];
+    const statVal=effectiveStat(sk.s);
+    const baseMod=Math.floor((statVal-10)/2);
+    const total=baseMod+(isChosen?prof:0);
+    const totalStr=(total>=0?'+':'')+total;
+    if(isBg){
+      return `<div class="skill-row locked">
+        <input type="checkbox" class="skill-check" checked disabled>
+        <div class="skill-name">${sk.es} <span style="font-size:10px;color:var(--purple-b)">(trasfondo)</span></div>
+        <span class="skill-stat">${sk.s}</span>
+        <span class="skill-mod">${totalStr}</span>
+      </div>`;
+    }
+    if(!isCls){
+      return `<div class="skill-row" style="opacity:.4;cursor:not-allowed">
+        <input type="checkbox" class="skill-check" disabled>
+        <div class="skill-name">${sk.es}</div>
+        <span class="skill-stat">${sk.s}</span>
+        <span class="skill-mod">${totalStr}</span>
+      </div>`;
+    }
+    return `<div class="skill-row${isChosen?' selected':''}" onclick="toggleSkill('${sk.n}',${maxChoose})">
+      <input type="checkbox" class="skill-check" ${isChosen?'checked':''} onchange="toggleSkill('${sk.n}',${maxChoose})">
+      <div class="skill-name">${sk.es}</div>
+      <span class="skill-stat">${sk.s}</span>
+      <span class="skill-mod">${totalStr}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleSkill(name, max){
+  const bgSkills=new Set(pc.background?.skills||[]);
+  if(bgSkills.has(name)) return;
+  const cls=pc.class_;
+  const clsSkills=new Set(cls?.skillChoices||[]);
+  if(!clsSkills.has(name)) return;
+  if(pc.skills[name]){
+    delete pc.skills[name];
+  } else {
+    const curChosen=Object.keys(pc.skills).filter(s=>!bgSkills.has(s)).length;
+    if(curChosen>=max){ setErr('err-6',`Solo puedes elegir ${max} pericias de clase.`); return; }
+    pc.skills[name]=true;
+  }
+  clearErr('err-6');
+  renderSkills();
+}
+
+// ═══════════════════════════════════════
+// STEP 7 — SUMMARY
+// ═══════════════════════════════════════
+function renderSummary(){
+  const el=document.getElementById('final-summary'); if(!el) return;
+  computeDerived();
+  const prof=profBonus(pc.nivel||1);
+  const skillList=SKILL_DEF.filter(s=>pc.skills[s.n]).map(s=>{
+    const v=effectiveStat(s.s);
+    const base=Math.floor((v-10)/2);
+    const total=base+prof;
+    return `${s.es} ${total>=0?'+':''}${total}`;
+  });
+  const saveList=(pc.class_?.saves||[]).map(s=>{
+    const v=effectiveStat(s);
+    const base=Math.floor((v-10)/2);
+    const total=base+prof;
+    return `${STAT_NAMES[s]} ${total>=0?'+':''}${total}`;
+  });
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+      <!-- Identity -->
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold-d);letter-spacing:1px;margin-bottom:10px">IDENTIDAD</div>
+        <div style="font-family:'Cinzel Decorative',serif;font-size:24px;background:linear-gradient(135deg,var(--purple-b),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${pc.nombre}</div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--cream-m);letter-spacing:.5px;margin-top:4px">${pc.race?.n||'?'} · ${pc.class_?.n||'?'} · Nivel ${pc.nivel}</div>
+        <div style="font-size:13px;color:var(--cream-m);margin-top:6px">${pc.background?.n||'?'} · ${pc.alignment}</div>
+        ${pc.appearance?`<div style="font-size:13px;color:var(--cream-d);margin-top:8px;font-style:italic">${pc.appearance}</div>`:''}
+      </div>
+      <!-- Combat stats -->
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold-d);letter-spacing:1px;margin-bottom:10px">ESTADÍSTICAS DE COMBATE</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+          ${[['HP',pc.hp_max],['CA',pc.ca],['Prof','+'+prof],
+             ['Ini',modVal(effectiveStat('DEX'))],
+             ['XP',pc.xp],['Niv',pc.nivel]]
+            .map(([l,v])=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:8px;text-align:center">
+              <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold);font-weight:700">${v}</div>
+              <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--cream-m);letter-spacing:.5px;margin-top:2px">${l}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <!-- Stats grid -->
+    <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold-d);letter-spacing:1px;margin-bottom:10px">ATRIBUTOS</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px">
+      ${STATS.map(s=>{
+        const v=effectiveStat(s);
+        const base=pc.base_stats[s];
+        const racial=(pc.race?.bonus?.[s])||0;
+        return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:8px;text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold);font-weight:700">${v}</div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--purple-b)">${modVal(v)}</div>
+          <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--cream-m);letter-spacing:.5px;margin-top:2px">${STAT_NAMES[s]}</div>
+          ${racial?`<div style="font-size:9px;color:var(--green-b)">(${base}+${racial})</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+    <!-- Skills & Saves -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold-d);letter-spacing:1px;margin-bottom:8px">PERICIAS</div>
+        ${skillList.map(s=>`<div style="font-size:13px;color:var(--cream-d);padding:3px 0;border-bottom:1px solid rgba(42,32,64,.4)">${s}</div>`).join('')||'<div style="font-size:13px;color:var(--cream-m);font-style:italic">Sin pericias</div>'}
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold-d);letter-spacing:1px;margin-bottom:8px">SALVACIONES</div>
+        ${saveList.map(s=>`<div style="font-size:13px;color:var(--cream-d);padding:3px 0;border-bottom:1px solid rgba(42,32,64,.4)">${s}</div>`).join('')||'<div style="font-size:13px;color:var(--cream-m);font-style:italic">Sin salvaciones de competencia</div>'}
+      </div>
+    </div>
+    ${pc.backstory?`<div style="margin-top:20px"><div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold-d);letter-spacing:1px;margin-bottom:8px">TRASFONDO</div><div style="font-size:14px;color:var(--cream-d);line-height:1.6;font-style:italic">${pc.backstory}</div></div>`:''}`;
+}
+
+// ═══════════════════════════════════════
+// PREVIEW (sidebar)
+// ═══════════════════════════════════════
+function updatePreview(){
+  const nm=document.getElementById('prev-name');
+  const cl=document.getElementById('prev-class');
+  const al=document.getElementById('prev-align');
+  const hp=document.getElementById('prev-hp');
+  const ca=document.getElementById('prev-ca');
+  const pf=document.getElementById('prev-prof');
+  const name=document.getElementById('pc-name')?.value||'Sin nombre';
+  if(nm) nm.textContent=name||'Sin nombre';
+  const parts=[pc.race?.n||'?',pc.class_?.n||'?','Nivel '+(pc.nivel||1)];
+  if(cl) cl.textContent=parts.join(' · ');
+  if(al) al.textContent=pc.alignment;
+  computeDerived();
+  if(hp) hp.textContent=pc.hp_max;
+  if(ca) ca.textContent=pc.ca;
+  if(pf) pf.textContent='+'+profBonus(pc.nivel||1);
+  const statsEl=document.getElementById('prev-stats');
+  if(statsEl) statsEl.innerHTML=STATS.map(s=>{
+    const v=effectiveStat(s);
+    return `<div class="preview-stat">
+      <div class="preview-stat-val">${v}</div>
+      <div class="preview-stat-mod">${modVal(v)}</div>
+      <div class="preview-stat-name">${s}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════
+async function saveCharacter(){
+  clearErr('err-7');
+  document.getElementById('suc-7').textContent='';
+  if(!currentUser){ setErr('err-7','No has iniciado sesión.'); return; }
+  computeDerived();
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando...';
+
+  const saveProfs={};
+  (pc.class_?.saves||[]).forEach(s=>saveProfs[s]=true);
+
+  const char={
+    campaign_id: null, // unassigned until joined
+    player_pin:  null, // no pin — auth based
+    user_id:     currentUser.id,
+    nombre:      pc.nombre,
+    clase:       pc.class_?.n||'',
+    raza:        pc.race?.n||'',
+    trasfondo:   pc.background?.n||'',
+    nivel:       pc.nivel||1,
+    xp:          pc.xp||0,
+    str:         effectiveStat('STR'),
+    dex:         effectiveStat('DEX'),
+    con:         effectiveStat('CON'),
+    int_:        effectiveStat('INT'),
+    wis:         effectiveStat('WIS'),
+    cha:         effectiveStat('CHA'),
+    hp_max:      pc.hp_max,
+    hp_curr:     pc.hp_curr,
+    ca:          pc.ca,
+    alignment:   pc.alignment,
+    equipo:      [],
+    habilidades: [],
+    skills:      pc.skills,
+    skill_overrides:{},
+    save_profs:  saveProfs,
+    dinero:      0,
+    backstory:   pc.backstory||'',
+    appearance:  pc.appearance||'',
+  };
+
+  let result;
+  if(editingId){
+    result = await sb.from('characters').update(char).eq('id',editingId).select().single();
+  } else {
+    result = await sb.from('characters').insert(char).select().single();
+  }
+
+  btn.disabled=false; btn.textContent='💾 Guardar personaje';
+  if(result.error){
+    setErr('err-7','Error al guardar: '+result.error.message);
+    return;
+  }
+  document.getElementById('suc-7').textContent=`✓ ${pc.nombre} guardado correctamente.`;
+  setTimeout(()=>{ window.location.href='login.html'; }, 1500);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+(async()=>{
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session?.user){ window.location.href='login.html'; return; }
+  currentUser=session.user;
+
+  // Check if editing existing character
+  const params=new URLSearchParams(window.location.search);
+  editingId=params.get('edit');
+  if(editingId){
+    const {data:ch}=await sb.from('characters').select('*').eq('id',editingId).single();
+    if(ch){
+      // Pre-fill
+      pc.nombre=ch.nombre; pc.nivel=ch.nivel||1; pc.xp=ch.xp||0;
+      pc.alignment=ch.alignment||'True Neutral';
+      pc.backstory=ch.backstory||''; pc.appearance=ch.appearance||'';
+      pc.skills=ch.skills||{}; 
+      STATS.forEach(s=>{
+        const key=s==='INT'?'int_':s.toLowerCase();
+        pc.base_stats[s]=+ch[key]||10;
+      });
+      pc.race=CC_DATA.races.find(r=>r.n===ch.raza)||null;
+      pc.class_=CC_DATA.classes.find(c=>c.n===ch.clase)||null;
+      pc.background=CC_DATA.backgrounds.find(b=>b.n===ch.trasfondo)||null;
+      document.getElementById('pc-name').value=pc.nombre;
+      document.getElementById('pc-level').value=pc.nivel;
+      document.getElementById('pc-backstory').value=pc.backstory;
+      document.getElementById('pc-appearance').value=pc.appearance;
+      setAlign(pc.alignment);
+    }
+  }
+
+  // Init stats display
+  renderStats();
+  setMethod('roll4d6');
+  updatePreview();
+  doRoll();
+})();
+</script>
+</body>
+</html>
