@@ -150,6 +150,9 @@ async function loadGameData() {
     COMP_DATA = { spells: data.spells, items: data.items, feats: data.feats };
     console.log('[Data] Loaded:', MONSTERS.length, 'monsters,',
       COMP_DATA.spells.length, 'spells,', COMP_DATA.items.length, 'items');
+    initBestiarioFilters();  // poblar filtros del bestiario ahora que MONSTERS está cargado
+    renderBestiario();
+    initCompFilters();       // poblar filtros del compendio ahora que COMP_DATA está cargado
   } catch(e) {
     console.error('[Data] Failed to load game data:', e);
     if(typeof showToast === 'function') showToast('Error cargando datos del compendio');
@@ -1192,7 +1195,10 @@ document.querySelectorAll('.tab').forEach(tab => {
 // MONSTERS declared at top
 
 
-(function initBestiarioFilters() {
+let _bestFiltersInit = false;
+function initBestiarioFilters() {
+  if(!MONSTERS || _bestFiltersInit) return; // los datos se cargan de forma asíncrona; evita crash y duplicados
+  _bestFiltersInit = true;
   const crOrder = ['0','1/8','1/4','1/2','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'];
   const crSet = new Set(), tySet = new Set();
   MONSTERS.forEach(m => { if(m.cr) crSet.add(m.cr); if(m.ty) tySet.add(m.ty); });
@@ -1204,14 +1210,14 @@ document.querySelectorAll('.tab').forEach(tab => {
     const o = document.createElement('option'); o.value=ty; o.textContent=ty.charAt(0).toUpperCase()+ty.slice(1);
     document.getElementById('mon-type').appendChild(o);
   });
-})();
+}
 
 function parseHP(s) { const m=(s||'').match(/^(\d+)/); return m?+m[1]:10; }
 function parseAC(s) { const m=(s||'').match(/^(\d+)/); return m?+m[1]:10; }
 
 let _bestResults = [];
 function renderBestiario() {
-  if(!MONSTERS) { const el=document.getElementById('tab-bestiario'); if(el) el.innerHTML='<div class="empty-state">Cargando...</div>'; return; }
+  if(!MONSTERS) { const el=document.getElementById('mon-list'); if(el) el.innerHTML='<div class="empty-state">Cargando...</div>'; return; } // solo mon-list, no borrar los controles del panel
   const q = document.getElementById('mon-search').value.toLowerCase();
   const crf = document.getElementById('mon-cr').value;
   const tyf = document.getElementById('mon-type').value;
@@ -1978,8 +1984,10 @@ function switchComp(tab) {
   if(tab==='feats')  renderCompFeats();
 }
 
-(function initCompFilters() {
-  if(typeof COMP_DATA === "undefined") return;
+let _compFiltersInit = false;
+function initCompFilters() {
+  if(!COMP_DATA || _compFiltersInit) return; // COMP_DATA es null hasta que carguen los datos; evita crash y duplicados
+  _compFiltersInit = true;
   const lvSet=new Set(), scSet=new Set(), tySet=new Set();
   COMP_DATA.spells.forEach(s=>{ if(s.lv!==undefined) lvSet.add(s.lv); if(s.sc) scSet.add(s.sc); });
   COMP_DATA.items.forEach(i=>{ if(i.ty) tySet.add(i.ty); });
@@ -2001,7 +2009,7 @@ function switchComp(tab) {
     const o=document.createElement('option'); o.value=ty; o.textContent=ty;
     document.getElementById('ci-type')?.appendChild(o);
   });
-})();
+}
 
 function refreshCompPCSelects() {
   ['cs-target-pc','cf-target-pc'].forEach(id=>{
