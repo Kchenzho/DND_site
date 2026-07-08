@@ -1,0 +1,92 @@
+/* ============================================================
+   compendio_dnd_5e.css — Estilos de compendio_dnd_5e.html
+   (usa la misma paleta 'parchment' que common.css, pero se deja
+   autocontenido para no arriesgar diferencias entre reglas)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+* { box-sizing: border-box; margin:0; padding:0; }
+:root {
+  --parchment:#1a1208; --parchment-2:#221908; --parchment-3:#2d2010;
+  --leather:#3d2b0f; --gold:#c9a227; --gold-dim:#8a6f1a; --gold-bright:#f0c840;
+  --dragon:#8b1a1a; --dragon-bright:#c0392b; --cream:#f0e6c8; --cream-dim:#c4b08a; --cream-muted:#8a7a5a;
+}
+body {
+  font-family:'Crimson Text', Georgia, serif;
+  background: var(--parchment);
+  color: var(--cream);
+  min-height:100vh;
+}
+.header {
+  background: var(--leather);
+  border-bottom: 2px solid var(--gold);
+  padding: 14px 20px;
+  display:flex; align-items:center; gap:12px;
+  position: sticky; top:0; z-index:10;
+}
+.header-title {
+  font-family:'Cinzel', serif;
+  color: var(--gold);
+  font-size: 22px;
+  font-weight:700;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 4px #000;
+  flex:1;
+  text-align:center;
+}
+.rune { color: var(--gold-dim); font-size:24px; }
+.tabs {
+  background: var(--parchment-2);
+  border-bottom: 1px solid var(--gold-dim);
+  display:flex; overflow-x:auto;
+  position: sticky; top: 56px; z-index: 9;
+}
+.tab {
+  flex-shrink:0; padding: 10px 16px; cursor:pointer;
+  font-family:'Cinzel', serif; font-size:12px; color: var(--cream-muted);
+  border-bottom:2px solid transparent;
+  letter-spacing:0.5px; white-space:nowrap;
+}
+.tab:hover { color: var(--cream-dim); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+.search-box { position:relative; margin-bottom: 14px; }
+.search-input {
+  width:100%; background: var(--parchment-3); border:1px solid var(--gold-dim);
+  color: var(--cream); padding: 10px 12px 10px 36px; font-size:15px;
+  border-radius: 3px; font-family:'Crimson Text', serif;
+}
+.search-input:focus { outline:none; border-color: var(--gold); }
+.search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color: var(--cream-muted); }
+.filters { display:flex; gap:8px; margin-bottom: 14px; flex-wrap:wrap; }
+.filter-select {
+  background: var(--parchment-3); border:1px solid var(--gold-dim); color: var(--cream);
+  padding: 6px 8px; border-radius:3px; font-family:'Cinzel',serif; font-size:11px;
+}
+.result-count { font-size:12px; color: var(--cream-muted); margin-bottom: 10px; font-family:'Cinzel',serif; letter-spacing:0.5px;}
+.card {
+  background: var(--parchment-2); border:1px solid var(--leather); border-left:3px solid var(--gold-dim);
+  border-radius:3px; padding: 12px 16px; margin-bottom: 10px; cursor:pointer; transition: border-color 0.15s;
+}
+.card:hover { border-left-color: var(--gold); }
+.card-name { font-family:'Cinzel',serif; color: var(--cream); font-size:15px; font-weight:600; }
+.card-meta { font-size:12px; color: var(--cream-dim); margin-top:3px; }
+.card-body { display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--leather); font-size:14px; line-height:1.6; color: var(--cream); }
+.card.open .card-body { display:block; }
+.card.open { border-left-color: var(--gold); }
+.stat-line { margin-bottom:4px; }
+.stat-label { color: var(--gold-dim); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.5px; }
+.ability-grid { display:grid; grid-template-columns: repeat(6,1fr); gap:6px; margin:10px 0; }
+.ability-box { background: var(--parchment-3); border:1px solid var(--leather); border-radius:3px; text-align:center; padding:6px 2px; }
+.ability-val { font-family:'Cinzel',serif; color: var(--gold); font-size:15px; font-weight:700; }
+.ability-name { font-size:9px; color: var(--cream-muted); font-family:'Cinzel',serif; letter-spacing:0.5px; }
+.trait-block { margin-top:8px; }
+.trait-name { font-family:'Cinzel',serif; color: var(--gold-bright); font-size:13px; font-weight:600; margin-bottom:2px; }
+.trait-text { font-size:13px; color: var(--cream-dim); line-height:1.5; white-space:pre-wrap; }
+.badge { display:inline-block; font-size:10px; padding:2px 7px; border-radius:3px; font-family:'Cinzel',serif; letter-spacing:0.5px; background: var(--leather); color: var(--cream-dim); }
+.empty-state { text-align:center; padding:40px 16px; color: var(--cream-muted); font-style:italic; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+.divider { border:none; border-top:1px solid var(--leather); margin:8px 0; }
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-thumb { background: var(--leather); border-radius:4px; }

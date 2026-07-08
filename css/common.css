@@ -1,0 +1,53 @@
+/* ============================================================
+   common.css — Estilos compartidos entre dm_screen.html y
+   player_screen.html (variables de tema, layout base, botones,
+   inputs, cards y badges idénticos en ambas pantallas).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+* { box-sizing: border-box; margin:0; padding:0; }
+:root { --parchment:#1a1208; --parchment-2:#221908; --parchment-3:#2d2010; --leather:#3d2b0f; --gold:#c9a227; --gold-dim:#8a6f1a; --gold-bright:#f0c840; --dragon:#8b1a1a; --dragon-bright:#c0392b; --cream:#f0e6c8; --cream-dim:#c4b08a; --cream-muted:#8a7a5a; --ink:#1a1208; }
+body { font-family:'Crimson Text', Georgia, serif; background: var(--parchment); color: var(--cream); min-height:100vh; }
+.header { background: var(--leather); border-bottom:2px solid var(--gold); padding:12px 18px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:20; }
+.sync-dot.live { background:#3a8a3a; box-shadow:0 0 6px #3a8a3a; }
+.tabs { background: var(--parchment-2); border-bottom:1px solid var(--gold-dim); display:flex; overflow-x:auto; scrollbar-width:none; position:sticky; top:48px; z-index:19; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab:hover { color: var(--cream-dim); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.btn:hover { background: var(--dragon); border-color: var(--gold); }
+.btn.danger { background: var(--dragon); border-color: var(--dragon-bright); color: var(--cream); }
+.btn.gold { background: var(--gold-dim); color: var(--ink); border-color: var(--gold); }
+.btn.gold:hover { background: var(--gold); }
+.card { background: var(--parchment-2); border:1px solid var(--leather); border-left:3px solid var(--gold-dim); border-radius:2px; padding:12px 14px; margin-bottom:10px; }
+.card-detail { font-size:12px; color: var(--cream-dim); margin-top:3px; line-height:1.4; }
+.badge-gold { background:var(--gold-dim); color:var(--ink); }
+.badge-red { background:var(--dragon); color:var(--cream); }
+.badge-green { background:#1a4a1a; color:#7cca7c; border:1px solid #3a8a3a; }
+.badge-blue { background:#1a2a4a; color:#7a9cca; border:1px solid #3a5a8a; }
+.badge-gray { background:var(--leather); color:var(--cream-dim); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.form-group { display:flex; flex-direction:column; gap:4px; }
+.stat-mod { font-size:11px; color: var(--cream-dim); }
+.round-badge { background: var(--dragon); color: var(--cream); font-family:'Cinzel',serif; font-size:11px; padding:5px 11px; border-radius:2px; letter-spacing:1px; }
+.empty-state { text-align:center; padding:28px; color: var(--cream-muted); font-style:italic; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+.flex-between { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap; }
+.divider { border:none; border-top:1px solid var(--leather); margin:10px 0; }
+.lock-screen { display:flex; align-items:center; justify-content:center; min-height:90vh; padding:20px; }
+.lock-box { background: var(--parchment-2); border:2px solid var(--gold-dim); border-radius:4px; padding:30px; max-width:380px; width:100%; text-align:center; }
+.lock-title { font-family:'Cinzel',serif; color: var(--gold); font-size:20px; letter-spacing:2px; margin-bottom:6px; }
+.lock-box .input { margin-bottom:10px; text-align:center; }
+.toast.show { opacity:1; }
+.dice-tray.open { transform:translateY(0); }
+.dice-btn { background:var(--parchment-3); border:1px solid var(--gold-dim); color:var(--gold); padding:6px 10px; cursor:pointer; font-family:'Cinzel',serif; font-size:11px; border-radius:3px; flex-shrink:0; }
+.adv-btn.active-adv { background:#1a4a1a; color:#7cca7c; border-color:#3a8a3a; }
+.adv-btn.active-dis { background:var(--dragon); color:var(--cream); border-color:var(--dragon-bright); }
+.dice-result-pop.show { opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto; }
+.roll-label { font-family:'Cinzel',serif; font-size:11px; color:var(--cream-muted); letter-spacing:1px; margin-bottom:8px; }
+.roll-total { font-family:'Cinzel',serif; font-size:56px; font-weight:700; line-height:1; }
+.roll-total.crit { color:var(--gold-bright); }
+.roll-total.fail { color:var(--dragon-bright); }
+.roll-total.normal { color:var(--cream); }
+.roll-breakdown { font-size:12px; color:var(--cream-dim); margin-top:8px; }
+.click-die { cursor:pointer; }

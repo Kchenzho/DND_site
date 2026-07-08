@@ -1,0 +1,339 @@
+[
+  {
+    "name": "Aberrant Dragon Mark",
+    "prerequisite": "No existing dragonmark",
+    "text": "You have manifested an aberrant dragonmark. Determine its appearance and the flaw associated with it. You gain the following benefits:\n\t \n• Increase your Constitution score by 1, to a maximum of 20.\n\t \n• Increase your Constitution score by 1, to a maximum of 20.You learn a cantrip from the sorcerer spell list. In addition, choose a 1st-level spell from the sorcerer spell list. You learn that spell and can cast it at its lowest level. Once you cast it, you must finish a long rest before you can cast it again. Constitution is your spellcasting ability for these spells.\n\t \n• Increase your Constitution score by 1, to a maximum of 20.You can increase the power of your aberrant spells at the risk of your own vitality. When you cast a spell with your aberrant mark, you can use one of your Hit Dice to increase the spell’s level by 1. Immediately after you cast the spell, roll the Hit Die. You take damage equal to the number rolled.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Actor",
+    "text": "Skilled at mimicry and dramatics, you gain the following benefits:\n• Increase your Charisma score by 1, to a maximum of 20.\n\n• You have advantage on Charisma (Deception) and Charisma (Performance) checks when trying to pass yourself off as a different person.\n\n• You can mimic the speech of another person or the sounds made by other creatures. You must have heard the person speaking, or heard the creature make the sound, for at least 1 minute. A successful Wisdom (Insight) check contested by your Charisma (Deception) check allows a listener to determine that the effect is faked.\n\nSource: Player's Handbook, page 165"
+  },
+  {
+    "name": "Alert",
+    "text": "Always on the lookout for danger, you gain the following\n\n• You gain a +5 bonus to initiative.\n\n• You can't be surprised while you are conscious.\n\n• Other creatures don't gain advantage on attack rolls against you as a result of being hidden from you.\n\nSource: Player's Handbook, page 165",
+    "modifier": {
+      "category": "Bonus",
+      "#text": "Initiative +5"
+    }
+  },
+  {
+    "name": "Athlete",
+    "text": "You have undergone extensive physical training to gain the following benefits: • Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n• When you are prone, standing up uses only 5 feet of your movement.\n\n• Climbing doesn't require extra movement.\n\n• You can make a running long jump or a running high jump after moving only 5 feet on foot, rather than 10 feet.\n\nSource: Player's Handbook, page 165 and 6/10/2015 errata"
+  },
+  {
+    "name": "Charger",
+    "text": "When you use your action to Dash, you can use a bonus action to make one melee weapon attack or to shove a creature.\n\nIf you move at least 10 feet in a straight line immediately before taking this bonus action, you either gain a +5 bonus to the attack's damage roll (if you chose to make a melee attack and hit) or push the target up to 10 feet away from you (if you chose to shove and you succeed).\n\nSource: Player's Handbook, page 165"
+  },
+  {
+    "name": "Crossbow Expert",
+    "text": "Thanks to extensive practice with the crossbow, you gain the following benefits:\n\n• You ignore the loading quality of crossbows with which you are proficient.\n\n• Being within 5 feet of a hostile creature doesn't impose disadvantage on your ranged attack rolls.\n\n• When you use the Attack action and attack with a one-handed weapon, you can use a bonus action to attack with a loaded hand crossbow you are holding.\n\nSource: Player's Handbook, page 165"
+  },
+  {
+    "name": "Defensive Duelist",
+    "prerequisite": "Dexterity 13 or higher",
+    "text": "When you are wielding a finesse weapon with which you are proficient and another creature hits you with a melee attack, you can use your reaction to add your proficiency bonus to your AC for that attack, potentially causing the attack to miss you.\n\nSource: Player's Handbook, page 165"
+  },
+  {
+    "name": "Dragonmark of Detection",
+    "prerequisite": "half-elf",
+    "text": "Your have the magical mark of Detection, the dragonmark of House Medani, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Wisdom as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: detect magic, mage hand\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: detect thoughts\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: clairvoyance\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Finding",
+    "prerequisite": "half-orc or human",
+    "text": "Your have the magical mark of Finding, the dragonmark of House Tharashk, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Wisdom as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: identify, mage hand\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: locate object\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: clairvoyance\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Handling",
+    "prerequisite": "human",
+    "text": "Your have the magical mark of Handling, the dragonmark of House Vadalis, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Wisdom as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: druidcraft, speak with animals\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: beast sense\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: conjure animals\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Healing",
+    "prerequisite": "halfling",
+    "text": "Your have the magical mark of Healing, the dragonmark of House Jorasco, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Wisdom as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: cure wounds, spare the dying\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: lesser restoration\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: revivify\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Hospitality",
+    "prerequisite": "halfling",
+    "text": "Your have the magical mark of Hospitality, the dragonmark of House Ghallanda, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Charisma as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: friends, unseen servant\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: rope trick\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: Leomund's tiny hut\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Making",
+    "prerequisite": "human",
+    "text": "Your have the magical mark of Making, the dragonmark of House Cannith, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Intelligence as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: identify, mending\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: magic weapon\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: fabricate\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Passage",
+    "prerequisite": "human",
+    "text": "Your have the magical mark of Passage, the dragonmark of House Orien, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Intelligence as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: expeditious retreat, light\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: misty step\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: teleportation circle\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Scribing",
+    "prerequisite": "gnome",
+    "text": "Your have the magical mark of Scribing, the dragonmark of House Sivis, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Intelligence as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: comprehend languages, message\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: sending\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: tongues\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Sentinel",
+    "prerequisite": "human",
+    "text": "Your have the magical mark of Sentinel, the dragonmark of House Deneith, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Wisdom as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: blade ward, compelled duel\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: blur\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: protection from energy\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Shadow",
+    "prerequisite": "elf",
+    "text": "Your have the magical mark of Shadow, the dragonmark of House Phiarlan and House Thuranni, and are a member of one of those houses.\nYou gain the ability to innately cast spells and cantrips, using Charisma as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: dancing lights, disguise self\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: darkness\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: nondetection\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Storm",
+    "prerequisite": "half-elf",
+    "text": "Your have the magical mark of Storm, the dragonmark of House Lyrander, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Intelligence as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: fog cloud, shocking grasp\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: gust of wind\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: sleet storm\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dragonmark of Warding",
+    "prerequisite": "dwarf",
+    "text": "Your have the magical mark of Warding, the dragonmark of House Kundarak, and are a member of that house.\nYou gain the ability to innately cast spells and cantrips, using Intelligence as your spellcasting ability. You cast each spell at its lowest level. Once you cast a given spell this way, you must finish a long rest before you can cast it innately again. You must still expend any material components. Your dragonmark confers the following benefits:\n\nLeast Dragonmark.\nWhen you first take this feat, you gain the least dragonmark. You learn the following spells: alarm, resistance\n\nLesser Dragonmark.\nAt 5th level and higher, your mark becomes more potent, improving to lesser dragonmark. You learn the following spell: arcane lock\n\nGreater Dragonmark.\nAt 9th level and higher, your mark's power increases again, becoming a greater dragonmark. You learn the following spell: magic circle\n\nSource: Unearthed Arcana - Eberron, page 5"
+  },
+  {
+    "name": "Dual Wielder",
+    "text": "You master fighting with two weapons, gaining the following benefits:\n\n• You gain a +1 bonus to AC while you are wielding a separate melee weapon in each hand.\n\n• You can use two-weapon fighting even when the one-handed melee weapons you are wielding aren't light.\n\n• You can draw or stow two one-handed weapons when you would normally be able to draw or stow only one.\n\nSource: Player's Handbook, page 165"
+  },
+  {
+    "name": "Dungeon Delver",
+    "text": "Alert to the hidden traps and secret doors found in many dungeons, you gain the following benefits:\n\n• You have advantage on Wisdom (Perception) and Intelligence (Investigation) checks made to detect the presence of secret doors.\n\n• You have advantage on saving throws made to avoid or resist traps.\n\n• You have resistance to the damage dealt by traps.\n\n• You can search for traps while traveling at a normal pace, instead of only at a slow pace.\n\nSource: Player's Handbook, page 166"
+  },
+  {
+    "name": "Durable",
+    "text": "Hardy and resilient, you gain the following benefits:\n\n• Increase your Constitution score by 1, to a maximum of 20.\n\n• When you roll a Hit Die to regain hit points, the minimum number of hit points you regain from the roll equals twice your Constitution modifier (minimum of 2).\n\nSource: Player's Handbook, page 166"
+  },
+  {
+    "name": "Elemental Adept",
+    "prerequisite": "The ability to cast at least one spell",
+    "text": "When you gain this feat, choose one of the following damage types: acid, cold, fire, lightning, or thunder.\n\nSpells you cast ignore resistance to damage of the chosen type. In addition, when you roll damage for a spell you cast that deals damage of that type, you can treat any 1 on a damage die as a 2.\n\nYou can select this feat multiple times. Each time you do so, you must choose a different damage type.\n\nSource: Player's Handbook, page 166"
+  },
+  {
+    "name": "Grappler",
+    "prerequisite": "Strength 13 or higher",
+    "text": "You've developed the skills necessary to hold your own in close-quarters grappling. You gain the following benefits:\n\n• You have advantage on attack rolls against a creature you are grappling.\n\n• You can use your action to try to pin a creature grappled by you. To do so, make another grapple check. If you succeed, you and the creature are both restrained until the grapple ends.\n\nSource: Player's Handbook, page 167 and 6/10/2015 errata"
+  },
+  {
+    "name": "Great Weapon Master",
+    "text": "You've learned to put the weight of a weapon to your advantage, letting its momentum empower your strikes. You gain the following benefits:\n\n• On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 hit points with one, you can make one melee weapon attack as a bonus action.\n\n• Before you make a melee attack with a heavy weapon that you are proficient with, you can choose to take a -5 penalty to the attack roll. If the attack hits, you add +10 to the attack's damage.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Greater Mark of Detection",
+    "prerequisite": "8th level, must possess Mark of Detection",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Charisma or Intelligence by 1, to a maximum of 20.\n\t \n• You learn see invisibilityand true seeing, each of which you can cast once without expending a spell slot or using a material component. Intelligence is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Finding",
+    "prerequisite": "8th level, must possess Mark of Finding",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Dexterity, Strength, or Wisdom by 1, to a maximum of 20.\n\t \n• You learn locate creature and find the path, each of which you can cast once without expending a spell slot or using a material component. Wisdom is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Handling",
+    "prerequisite": "8th level, must possess Mark of Handling",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Dexterity or Wisdom by 1, to a maximum of 20.\n\t \n• You learn beast sense and dominate beast, each of which you can cast once without expending a spell slot or using a material component. Wisdom is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Healing",
+    "prerequisite": "8th level, must possess Mark of Healing",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Dexterity or Wisdom by 1, to a maximum of 20.\n\t \n• You learn mass healing word and greater restoration, each of which you can cast once without expending a spell slot or using a material component. Wisdom is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Hospitality",
+    "prerequisite": "8th level, must possess Mark of Hospitality",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Charisma or Dexterity by 1, to a maximum of 20.\n\t \n• You learn sanctuary and Mordenkainen's magnificent mansion, each of which you can cast once without expending a spell slot or using a material component. Charisma is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Making",
+    "prerequisite": "8th level, must possess Mark of Making",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Dexterity or Intelligence by 1, to a maximum of 20.\n\t \n• You learn fabricate and creation, each of which you can cast once without expending a spell slot or using a material component. Intelligence is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Passage",
+    "prerequisite": "8th level, must possess Mark of Passage",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Dexterity or Constitution by 1, to a maximum of 20.\n\t \n• You learn blink and teleportation circle, each of which you can cast once without expending a spell slot or using a material component. Constitution is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Scribing",
+    "prerequisite": "8th level, must possess Mark of Scribing",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Intelligence or Charisma by 1, to a maximum of 20.\n\t \n• You learn sending and tongues, each of which you can cast once without expending a spell slot or using a material component. Intelligence is your spellcasting ability for these spells. You must complete a long or short rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Sentinel",
+    "prerequisite": "8th level, must possess Mark of Sentinel",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Strength or Wisdom by 1, to a maximum of 20.\n\t \n• You learn compelled duel and warding bond, each of which you can cast once without expending a spell slot or using a material component. Wisdom is your spellcasting ability for these spells. You must complete a long or short rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Shadow",
+    "prerequisite": "8th level, must possess Mark of Shadow",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Charisma or Dexterity by 1, to a maximum of 20.\n\t \n• You learn nondetection and mislead, each of which you can cast once without expending a spell slot or using a material component. Charisma is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Storm",
+    "prerequisite": "8th level, must possess Mark of Storm",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Charisma or Dexterity by 1, to a maximum of 20.\n\t \n• You learn control water and control winds, each of which you can cast once without expending a spell slot or using a material component. Charisma is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Greater Mark of Warding",
+    "prerequisite": "8th level, must possess Mark of Warding",
+    "text": "Your dragonmark has grown in size and power. This enhances your existing dragonmark, and the benefits are based on the mark that you already possess. A greater dragonmark provides the following benefits:\n\t \n• The die type of your dragonmarked Intuition Die increases by one (for example, from a d4 to a d6).\n\t \n• Increase either your Dexterity or Intelligence by 1, to a maximum of 20.\n\t \n• You learn knock, glyph of warding, and Leomund's secret chest, each of which you can cast once without expending a spell slot or using a material component. Intelligence is your spellcasting ability for these spells. You must complete a long rest to regain the use of these spells.\n \nSource: Wayfinder's Guide to Eberron, Chapter 4"
+  },
+  {
+    "name": "Healer",
+    "text": "You are an able physician, allowing you to mend wounds quickly and get your allies back in the fight. You gain the following benefits:\n\n• When you use a healer's kit to stabilize a dying creature, that creature also regains 1 hit point.\n\n• As an action, you can spend one use of a healer's kit to tend to a creature and restore 1d6 + 4 hit points to it, plus additional hit points equal to the creature's maximum number of Hit Dice. The creature can't regain hit points from this feat again until it finishes a short or long rest.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Heavily Armored",
+    "prerequisite": "Proficiency with medium armor",
+    "text": "You have trained to master the use of heavy armor, gaining the following benefits:\n\n• Increase your Strength score by 1, to a maximum of 20.\n\n• You gain proficiency with heavy armor.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Heavy Armor Master",
+    "prerequisite": "Proficiency with heavy armor",
+    "text": "You can use your armor to deflect strikes that would kill others. You gain the following benefits:\n\n• Increase your Strength score by 1, to a maximum of 20.\n\n• While you are wearing heavy armor, bludgeoning, piercing, and slashing damage that you take from nonmagical weapons is reduced by 3.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Inspiring Leader",
+    "prerequisite": "CHA 13",
+    "text": "You can spend 10 minutes inspiring your companions, shoring up their resolve to fight. When you do so, choose up to six friendly creatures (which can include yourself) within 30 feet of you who can see or hear you and who can understand you. Each creature can gain temporary hit points equal to your level + your Charisma modifier. A creature can't gain temporary hit points from this feat again until it has finished a short or long rest.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Keen Mind",
+    "text": "You have a mind that can track time, direction, and detail with uncanny precision. You gain the following benefits.\n\n• Increase your Intelligence score by 1, to a maximum of 20.\n\n• You always know which way is north.\n\n• You always know the number of hours left before the next sunrise or sunset.\n\n• You can accurately recall anything you have seen or heard within the past month.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Lightly Armored",
+    "text": "You have trained to master the use of light armor, gaining the following benefits:\n\n• Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n• You gain proficiency with light armor.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Linguist",
+    "text": "You have studied languages and codes, gaining the following benefits:\n\n• Increase your Intelligence score by 1, to a maximum of 20.\n\n• You learn three languages of your choice.\n\n• You can ably create written ciphers. Others can't decipher a code you create unless you teach them, they succeed on an Intelligence check (DC equal to your Intelligence score + your proficiency bonus), or they use magic to decipher it.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Lucky",
+    "text": "You have inexplicable luck that seems to kick in at just the right moment.\n\nYou have 3 luck points. Whenever you make an attack roll, an ability check, or a saving throw, you can spend one luck point to roll an additional d20. You can choose to spend one of your luck points after you roll the die, but before the outcome is determined. You choose which of the d20s is used for the attack roll, ability check, or saving throw.\n\nYou can also spend one luck point when an attack roll is made against you. Roll a d20, and then choose whether the attack uses the attacker's roll or yours. If more than one creature spends a luck point to influence the outcome of a roll, the points cancel each other out; no additional dice are rolled.\n\nYou regain your expended luck points when you finish a long rest.\n\nSource: Player's Handbook, page 167"
+  },
+  {
+    "name": "Mage Slayer",
+    "text": "You have practiced techniques useful in melee combat against spellcasters, gaining the following benefits:\n\n• When a creature within 5 feet of you casts a spell, you can use your reaction to make a melee weapon attack against that creature.\n\n• When you damage a creature that is concentrating on a spell, that creature has disadvantage on the saving throw it makes to maintain its concentration.\n\n• You have advantage on saving throws against spells cast by creatures within 5 feet of you.\n\nSource: Player's Handbook, page 168"
+  },
+  {
+    "name": "Magic Initiate",
+    "text": "Choose a class: bard, cleric, druid, sorcerer, warlock, or wizard. You learn two cantrips of your choice from that class's spell list.\n\nIn addition, choose one 1st-level spell from that same list. You learn that spell and can cast it at its lowest level. Once you cast it, you must finish a long rest before you can cast it again using this feat.\n\nYour spellcasting ability for these spells depends on the class you chose: Charisma for bard, sorcerer, or warlock; Wisdom for cleric or druid: or Intelligence for wizard.\n\nSource: Player's Handbook, page 168 and 6/10/2015 errata"
+  },
+  {
+    "name": "Martial Adept",
+    "text": "You have martial training that allows you to perform special combat maneuvers. You gain the following benefits:\n\n• You learn two maneuvers of your choice from among those available to the Battle Master archetype in the fighter class. If a maneuver you use requires your target to make a saving throw to resist the maneuver's effects, the saving throw DC equals 8 + your proficiency bonus + your Strength or Dexterity modifier (your choice).\n\n• If you already have superiority dice, you add one more to your existing pool; otherwise, you have one superiority die, which is a d6. This die is used to fuel your maneuvers. A superiority die is expended when you use it. You regain your expended superiority dice when you finish a short or long rest.\n\nSource: Player's Handbook, page 168 and 6/10/2015 errata"
+  },
+  {
+    "name": "Medium Armor Master",
+    "prerequisite": "Proficiency with medium armor",
+    "text": "You have practiced moving in medium armor to gain the following benefits:\n\n• Wearing medium armor doesn't impose disadvantage on your Dexterity (Stealth) checks.\n\n• When you wear medium armor, you can add 3, rather than 2, to your AC if you have a Dexterity of 16 or higher.\n\nSource: Player's Handbook, page 168"
+  },
+  {
+    "name": "Mobile",
+    "text": "You are exceptionally speedy and agile. You gain the following benefits:\n\n• Your speed increases by 10 feet.\n\n• When you use the Dash action, difficult terrain doesn't cost you extra movement on that turn.\n\n• When you make a melee attack against a creature, you don't provoke opportunity attacks from that creature for the rest of the turn, whether you hit or not.\n\nSource: Player's Handbook, page 168",
+    "modifier": {
+      "category": "Bonus",
+      "#text": "Speed +10"
+    }
+  },
+  {
+    "name": "Moderately Armored",
+    "prerequisite": "Proficiency with light armor",
+    "text": "You have trained to master the use of medium armor and shields, gaining the following benefits:\n\n• Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n• You gain proficiency with medium armor and shields.\n\nSource: Player's Handbook, page 168"
+  },
+  {
+    "name": "Mounted Combatant",
+    "text": "You are a dangerous foe to face while mounted. While you are mounted and aren't incapacitated, you gain the following benefits:\n\n• You have advantage on melee attack rolls against any unmounted creature that is smaller than your mount.\n\n• You can force an attack targeted at your mount to target you instead.\n\n• If your mount is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, it instead takes no damage if it succeeds on the saving throw, and only half damage if it fails.\n\nSource: Player's Handbook, page 168"
+  },
+  {
+    "name": "Observant",
+    "text": "Quick to notice details of your environment, you gain the following benefits:\n\n• Increase your Intelligence or Wisdom score by 1, to a maximum of 20.\n\n• If you can see a creature's mouth while it is speaking a language you understand, you can interpret what it's saying by reading its lips.\n\n• You have a +5 bonus to your passive Wisdom (Perception) and passive Intelligence (Investigation) scores.\n\nSource: Player's Handbook, page 168",
+    "modifier": {
+      "category": "Bonus",
+      "#text": "Passive Wisdom +5"
+    }
+  },
+  {
+    "name": "Polearm Master",
+    "text": "You can keep your enemies at bay with reach weapons. You gain the following benefits:\n\n• When you take the Attack action and attack with only a glaive, halberd, or quarterstaff, you can use a bonus action to make a melee attack with the opposite end of the weapon; this attack uses the same ability modifier as the main attack. The weapon's damage die for this attack is a d4, and the attack deals bludgeoning damage.\n\n• While you are wielding a glaive, halberd, pike, or quarterstaff, other creatures provoke an opportunity attack from you when they enter your reach.\n\nSource: Player's Handbook, page 168 and 6/10/2015 errata"
+  },
+  {
+    "name": "Quicksmithing",
+    "prerequisite": "Intelligence 13 or higher",
+    "text": "You have mastered the art of on-the-fly invention, improvement, and jury-rigging. You can use your talents to create immediate, short-term magical effects similar to spells, given time and an adequate supply of aether. \n\tWhen you choose this feat, you master two magical effects, each of which recreates the effect of a 1st-level spell that has the ritual tag. These spells can come from any class list, but Intelligence is your spellcasting ability for them. \n\tIf you come across a schematic geared toward quicksmithing or study with another quicksmith, you might be able to add another spell to the effects you have mastered. The spell’s level can be no higher than half your level (rounded up), and it must have the ritual tag. The process of mastering the spell takes 2 hours per level of the spell, and costs 50 gp per level. The cost represents aether you use as you experiment with the spell effect to master it. \n\tIn addition, you have proficiency with artisan’s tools (quicksmith’s tools). Using those tools, you can spend 1 hour and 10 gp worth of materials to construct a Tiny clockwork device (AC 5, 1 hp). The device ceases to function after 24 hours unless you spend 1 hour repairing it to keep it functioning. You can use your action to dismantle the device, at which point you can reclaim the materials used to create it. You can have up to three such devices active at a time. \n\tWhen you create a device, choose one of the following options: \n\t \nClockwork Toy: This toy is a clockwork animal, monster, or person, such as a frog, mouse, bird, dragon, or soldier. When placed on the ground, the toy moves 5 feet across the ground on each of your turns in a random direction. It makes noises as appropriate to the creature it represents. \n\t \nFire Starter; This device produces a miniature flame, which you can use to light a candle, torch, or campfire. Using the device requires your action. \n\t \nMusic Box: When opened, this music box plays a single song at a moderate volume. The box stops playing when it reaches the song’s end or when it is closed.\n \nSource: Plane Shift: Kaladesh, p. 13"
+  },
+  {
+    "name": "Resilient",
+    "text": "Choose one ability score. You gain the following benefits:\n\n• Increase the chosen ability score by 1, to a maximum of 20.\n\n• You gain proficiency in saving throws using the chosen ability.\n\nSource: Player's Handbook, page 168"
+  },
+  {
+    "name": "Revenant Blade",
+    "prerequisite": "Elf",
+    "text": "You are descended from a master of the double blade and their skills have passed on to you. You gain the following benefits:\n\t \n• Increase your Dexterity or Strength score by 1, to a maximum of 20.\n\t \n• While wielding a double-bladed weapon with two hands, the weapon has the finesse trait for your attacks with it, and you gain +1 AC.\n\t \n• On your turn, when you use a bonus action to make a melee attack with the blade at the opposite end of the weapon, the weapon’s damage die for this attack increases to 2d4, instead of 1d4.\n \nSource: Wayfinder's Guide to Eberron, Chapter 3"
+  },
+  {
+    "name": "Ritual Caster",
+    "prerequisite": "Intelligence or Wisdom 13 or higher",
+    "text": "You have learned a number of spells that you can cast as rituals. These spells are written in a ritual book, which you must have in hand while casting one of them.\n\nWhen you choose this feat, you acquire a ritual book holding two 1st-level spells of your choice. Choose one of the following classes: bard, cleric, druid, sorcerer, warlock, or wizard. You must choose your spells from that class's spell list, and the spells you choose must have the ritual tag. The class you choose also determines your spellcasting ability for these spells: Charisma for bard, sorcerer, or warlock; Wisdom for cleric or druid; or Intelligence for wizard.\n\nIf you come across a spell in written form, such as a magical spell scroll or a wizard's spellbook, you might be able to add it to your ritual book. The spell must be on the spell list for the class you chose, the spell's level can be no higher than half your level (rounded up), and it must have the ritual tag. The process of copying the spell into your ritual book takes 2 hours per level of the spell, and costs 50 gp per level. The cost represents material components you expend as you experiment with the spell to master it, as well as the fine inks you need to record it.\n\nSource: Player's Handbook, page 169"
+  },
+  {
+    "name": "Savage Attacker",
+    "text": "Once per turn when you roll damage for a melee weapon attack, you can reroll the weapon's damage dice and use either total."
+  },
+  {
+    "name": "Sentinel",
+    "text": "You have mastered techniques to take advantage of every drop in any enemy's guard, gaining the following benefits:\n\n• When you hit a creature with an opportunity attack, the creature's speed becomes 0 for the rest of the turn.\n\n• Creatures provoke opportunity attacks from you even if they take the Disengage action before leaving your reach.\n\n• When a creature within 5 feet of you makes an attack against a target other than you (and that target doesn't have this feat), you can use your reaction to make a melee weapon attack against the attacking creature.\n\nSource: Player's Handbook, page 169 and 6/10/2015 errata"
+  },
+  {
+    "name": "Servo Crafting",
+    "prerequisite": "Intelligence 13 or higher",
+    "text": "You are skilled in the creation of servos—tiny constructs that function as personal assistants. You can cast the find familiar spell as a ritual, creating a servo to serve as your familiar instead of an animal. A servo’s statistics appear in the “Artifact Creatures” section of this document. In every other way, a servo familiar functions as described in the find familiar spell. \n\tYou can communicate telepathically with your servo familiar and perceive through its senses as long as you are on the same plane of existence. You can speak through your servo in your own voice. \n\tAdditionally, when you take the Attack action, you can forgo one of your own attacks to allow your servo familiar to make one attack of its own.\n \nSource: Plane Shift: Kaladesh, p. 13"
+  },
+  {
+    "name": "Sharpshooter",
+    "text": "You have mastered ranged weapons and can make shots that others find impossible. You gain the following benefits:\n\n• Attacking at long range doesn't impose disadvantage on your ranged weapon attack rolls.\n\n• Your ranged weapon attacks ignore half cover and three-quarters cover.\n\n• Before you make an attack with a ranged weapon that you are proficient with, you can choose to take a -5 penalty to the attack roll. If the attack hits, you add +10 to the attack's damage.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "Shield Master",
+    "text": "You use shields not just for protection but also for offense. You gain the following benefits while you are wielding a shield:\n\n• If you take the Attack action on your turn, you can use a bonus action to try to shove a creature within 5 feet of you with your shield.\n\n• If you aren't incapacitated, you can add your shield's AC bonus to any Dexterity saving throw you make against a spell or other harmful effect that targets only you.\n\n• If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you can use your reaction to take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "Skilled",
+    "text": "You gain proficiency in any combination of three skills or tools of your choice.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "Skulker",
+    "prerequisite": "Dexterity 13 or higher",
+    "text": "You are expert at slinking through shadows. You gain the following benefits:\n\n• You can try to hide when you are lightly obscured from the creature from which you are hiding.\n\n• When you are hidden from a creature and miss it with a ranged weapon attack, making the attack doesn't reveal your position.\n\n• Dim light doesn't impose disadvantage on your Wisdom (Perception) checks relying on sight.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "Spell Sniper",
+    "prerequisite": "The ability to cast at least one spell",
+    "text": "You have learned techniques to enhance your attacks with certain kinds of spells, gaining the following benefits:\n\n• When you cast a spell that requires you to make an attack roll, the spell's range is doubled.\n\n• Your ranged spell attacks ignore half cover and three-quarters cover.\n\n• You learn one cantrip that requires an attack roll. Choose the cantrip from the bard, cleric, druid, sorcerer, warlock, or wizard spell list. Your spellcasting ability for this cantrip depends on the spell list you chose from: Charisma for bard, sorcerer, or warlock; Wisdom for cleric or druid; or Intelligence for wizard.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "Svirfneblin Magic",
+    "prerequisite": "Gnome (deep gnome)",
+    "text": "You have inherited the innate spellcasting ability of your ancestors. This ability allows you to cast nondetection on yourself at will, without needing a material component. You can also cast each of the following spells once with this ability: blindness/deafness, blur, and disguise self. You regain the ability to cast these spells when you finish a long rest.\n\nIntelligence is your spellcasting ability for these spells, and you cast them at their lowest possible levels.\n\nSource: Elemental Evil Player's Companion, page 7"
+  },
+  {
+    "name": "Tavern Brawler",
+    "text": "Accustomed to rough-and-tumble fighting using whatever weapons happen to be at hand, you gain the following benefits:\n\n• Increase your Strength or Constitution score by 1, to a maximum of 20.\n\n• You are proficient with improvised weapons.\n\n• Your unarmed strike uses a d4 for damage.\n\n• When you hit a creature with an unarmed strike or an improvised weapon on your turn, you can use a bonus action to attempt to grapple the target.\n\nSource: Player's Handbook, page 170 and 6/10/2015 errata"
+  },
+  {
+    "name": "Tough",
+    "text": "Your hit point maximum increases by an amount equal to twice your level when you gain this feat. Whenever you gain a level thereafter, your hit point maximum increases by an additional 2 hit points.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "War Caster",
+    "prerequisite": "The ability to cast at least one spell",
+    "text": "You have practiced casting spells in the midst of combat, learning techniques that grant you the following benefits:\n\n• You have advantage on Constitution saving throws that you make to maintain your concentration on a spell when you take damage.\n\n• You can perform the somatic components of spells even when you have weapons or a shield in one or both hands.\n\n• When a hostile creature's movement provokes an opportunity attack from you, you can use your reaction to cast a spell at the creature, rather than making an opportunity attack. The spell must have a casting time of 1 action and must target only that creature.\n\nSource: Player's Handbook, page 170"
+  },
+  {
+    "name": "Weapon Master",
+    "text": "You have practiced extensively with a variety of weapons, gaining the following benefits:\n\n• Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n• You gain proficiency with four simple or martial weapons of your choice.\n\nSource: Player's Handbook, page 170 and 6/10/2015 errata"
+  }
+]
