@@ -12,16 +12,41 @@
 
 <div id="lock-screen" class="lock-screen">
   <div class="lock-box">
-    <div class="lock-title">⚔ DM SCREEN ⚔</div>
-    <div class="lock-sub" id="lock-sub">Crea una campaña nueva o entra a una existente</div>
-    <div id="lock-new">
-      <button class="btn gold" style="width:100%;padding:10px;margin-bottom:16px" onclick="createCampaign()">Crear nueva campaña</button>
-      <div class="divider"></div>
+
+    <!-- Login con email+contraseña -->
+    <div id="dm-auth-state">
+      <div class="lock-title">⚔ DM SCREEN ⚔</div>
+      <p style="font-size:13px;color:var(--cream-muted);margin-bottom:20px">Inicia sesión para acceder a tus campañas</p>
+      <input class="input" id="dm-email" type="email" placeholder="Tu correo" style="margin-bottom:8px" autocomplete="email">
+      <input class="input" id="dm-pass" type="password" placeholder="Contraseña"
+        onkeydown="if(event.key==='Enter') dmAuthLogin()" style="margin-bottom:10px" autocomplete="current-password">
+      <button class="btn gold" style="width:100%;padding:10px;margin-bottom:10px" onclick="dmAuthLogin()">
+        Entrar como DM
+      </button>
+      <div id="dm-lock-error" style="color:#e0a0a0;font-size:12px;margin-bottom:10px"></div>
+      <div style="text-align:center;font-size:12px;color:var(--cream-muted)">
+        ¿Sin cuenta? <a href="login.html" style="color:var(--gold-dim)">Regístrate en el portal</a>
+      </div>
     </div>
-    <input class="input" id="lock-code" placeholder="Código de campaña (ej: ABCD12)" style="text-transform:uppercase">
-    <input class="input" id="lock-pin" type="password" placeholder="PIN de DM">
-    <button class="btn" style="width:100%;padding:10px" onclick="enterCampaign()">Entrar como DM</button>
-    <div id="lock-error" style="color:#e0a0a0;font-size:12px;margin-top:10px"></div>
+
+    <!-- Selector de campaña -->
+    <div id="dm-campaign-state" style="display:none">
+      <div class="lock-title">⚔ DM SCREEN ⚔</div>
+      <p style="font-size:13px;color:var(--cream-muted);margin-bottom:6px">
+        Bienvenido, <strong id="dm-user-name" style="color:var(--gold-dim)"></strong>
+      </p>
+      <p style="font-size:12px;color:var(--cream-muted);margin-bottom:14px">Selecciona o crea una campaña</p>
+      <button class="btn gold" style="width:100%;padding:9px;margin-bottom:12px" onclick="dmCreateCampaignFromLock()">
+        ✨ Nueva campaña
+      </button>
+      <div id="dm-camp-list" style="display:flex;flex-direction:column;gap:7px;max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
+      <div id="dm-lock-error-2" style="color:#e0a0a0;font-size:12px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <a href="login.html" class="btn" style="flex:1;justify-content:center;text-decoration:none;font-size:10px;background:var(--leather)">📖 Portal</a>
+        <button class="btn" onclick="dmAuthLogout()" style="font-size:10px;background:var(--leather)">Cerrar sesión</button>
+      </div>
+    </div>
+
   </div>
 </div>
 

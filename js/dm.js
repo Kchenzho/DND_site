@@ -1,4 +1,3 @@
-
 const SUPABASE_URL = 'https://dgbgdymdtdhajztqdedb.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmdkeW1kdGRoYWp6dHFkZWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODQwODksImV4cCI6MjA5ODM2MDA4OX0.iHsEAVVlxD5DxuHgHKHBPJKuPy73k98c8UkHF8hodZg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -50,27 +49,123 @@ async function enterCampaign() {
   startApp();
 }
 
+
+// ══════════════════════════════════════
+// DM AUTH — Supabase Auth
+// ══════════════════════════════════════
+let _dmAuthUser = null;
+
+async function dmAuthLogin() {
+  const email = document.getElementById('dm-email').value.trim();
+  const pass  = document.getElementById('dm-pass').value;
+  const errEl = document.getElementById('dm-lock-error');
+  if(!email||!pass) { errEl.textContent='Ingresa correo y contraseña.'; return; }
+  errEl.textContent = '';
+  const {data, error} = await sb.auth.signInWithPassword({email, password:pass});
+  if(error) { errEl.textContent = error.message; return; }
+  _dmAuthUser = data.user;
+  await dmShowCampaignPicker();
+}
+
+async function dmAuthLogout() {
+  await sb.auth.signOut();
+  _dmAuthUser = null;
+  localStorage.removeItem('dm_session');
+  document.getElementById('dm-auth-state').style.display = 'block';
+  document.getElementById('dm-campaign-state').style.display = 'none';
+}
+
+async function dmShowCampaignPicker() {
+  if(!_dmAuthUser) return;
+  document.getElementById('dm-auth-state').style.display = 'none';
+  document.getElementById('dm-campaign-state').style.display = 'block';
+  const name = _dmAuthUser.user_metadata?.display_name || _dmAuthUser.email?.split('@')[0] || 'DM';
+  document.getElementById('dm-user-name').textContent = name;
+
+  const {data:camps} = await sb.from('campaigns').select('*')
+    .eq('owner_id', _dmAuthUser.id).order('last_played', {ascending:false});
+
+  const el = document.getElementById('dm-camp-list');
+  if(!camps||!camps.length) {
+    el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--cream-muted);font-size:13px;font-style:italic">Sin campañas. Crea la primera arriba.</div>';
+    return;
+  }
+  el.innerHTML = camps.map(c => {
+    const date = c.last_played
+      ? new Date(c.last_played).toLocaleDateString('es-ES',{day:'numeric',month:'short'})
+      : '';
+    const cid = c.id, ccode = c.code, cname = c.name||c.code;
+    return '<div onclick="dmEnterCampaign(\'' + cid + '\',\'' + ccode + '\')" '
+      + 'style="background:var(--parchment-3);border:1px solid var(--leather);border-radius:3px;'
+      + 'padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s" '
+      + 'onmouseover="this.style.borderColor=\'var(--gold-dim)\'" '
+      + 'onmouseout="this.style.borderColor=\'var(--leather)\'">'
+      + '<div style="flex:1">'
+      + '<div style="font-family:Cinzel,serif;font-size:13px;color:var(--cream)">' + cname + '</div>'
+      + '<div style="font-family:Cinzel,serif;font-size:9px;color:var(--gold-dim);letter-spacing:1px;margin-top:3px">'
+      + ccode + (date ? ' &middot; ' + date : '') + '</div>'
+      + '</div>'
+      + '<span style="color:var(--gold-dim);font-size:14px">→</span>'
+      + '</div>';
+  }).join('');
+}
+
+async function dmEnterCampaign(campId, campCode) {
+  campaignId = campId; campaignCode = campCode;
+  localStorage.setItem('dm_session', JSON.stringify({campaignId, campaignCode}));
+  await sb.from('campaigns').update({last_played: new Date().toISOString()}).eq('id', campId);
+  await startApp();
+}
+
+async function dmCreateCampaignFromLock() {
+  const name = prompt('Nombre de la campaña:', 'Nueva Campaña');
+  if(!name) return;
+  const code = Math.random().toString(36).slice(2,8).toUpperCase();
+  const {data, error} = await sb.from('campaigns').insert({
+    code, owner_id: _dmAuthUser.id, name,
+    dm_pin: Math.floor(1000+Math.random()*9000).toString(),
+    created_at: new Date().toISOString(),
+    last_played: new Date().toISOString()
+  }).select().single();
+  if(error) { document.getElementById('dm-lock-error-2').textContent='Error: '+error.message; return; }
+  await sb.from('campaign_members').insert({campaign_id:data.id, user_id:_dmAuthUser.id, role:'dm'});
+  await dmEnterCampaign(data.id, data.code);
+}
+
 async function tryAutoLogin() {
-  // Priority 1: session passed from dashboard (login.html)
+  // Priority 1: session passed from login.html dashboard
   const fromDash = sessionStorage.getItem('dm_campaign');
   if(fromDash) {
     try {
       const d = JSON.parse(fromDash);
-      sessionStorage.removeItem('dm_campaign'); // consume it
+      sessionStorage.removeItem('dm_campaign');
       campaignId = d.campaignId; campaignCode = d.code;
       localStorage.setItem('dm_session', JSON.stringify({campaignId, campaignCode}));
       await startApp(); return true;
-    } catch(e) { console.warn('Dashboard session parse error:', e); }
+    } catch(e) { console.warn('Dashboard session error:', e); }
   }
-  // Priority 2: persistent localStorage session
+  // Priority 2: saved campaign in localStorage
   const saved = localStorage.getItem('dm_session');
-  if(!saved) return false;
-  try {
-    const d = JSON.parse(saved);
-    if(!d.campaignId) return false;
-    campaignId = d.campaignId; campaignCode = d.campaignCode;
-    await startApp(); return true;
-  } catch(e) { return false; }
+  if(saved) {
+    try {
+      const d = JSON.parse(saved);
+      if(d.campaignId) {
+        campaignId = d.campaignId; campaignCode = d.campaignCode;
+        await startApp(); return true;
+      }
+    } catch(e) { localStorage.removeItem('dm_session'); }
+  }
+  // Priority 3: Supabase Auth session exists — show campaign picker
+  const {data:{session}} = await sb.auth.getSession();
+  if(session?.user) {
+    _dmAuthUser = session.user;
+    await dmShowCampaignPicker();
+    return false;
+  }
+  // No session at all — show login form
+  document.getElementById('dm-auth-state').style.display = 'block';
+  document.getElementById('dm-campaign-state').style.display = 'none';
+  return false;
 }
 
 async function startApp() {
@@ -2905,9 +3000,18 @@ function dungeonSetBrush(t) {
 
 
 function goToDashboard() {
-  if(confirm('¿Volver al dashboard de campañas?')) {
+  if(confirm('¿Cambiar de campaña?')) {
     localStorage.removeItem('dm_session');
-    window.location.href = 'login.html';
+    if(_dmAuthUser) {
+      // Still logged in — show campaign picker without full reload
+      const ls = document.getElementById('lock-screen');
+      const ma = document.getElementById('main-app');
+      if(ls) { ls.style.setProperty('display','flex','important'); }
+      if(ma) { ma.style.display = 'none'; }
+      dmShowCampaignPicker();
+    } else {
+      window.location.href = 'login.html';
+    }
   }
 }
 
