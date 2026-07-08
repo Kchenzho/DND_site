@@ -1,5 +1,6 @@
 const SUPABASE_URL = 'https://dgbgdymdtdhajztqdedb.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYmdkeW1kdGRoYWp6dHFkZWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODQwODksImV4cCI6MjA5ODM2MDA4OX0.iHsEAVVlxD5DxuHgHKHBPJKuPy73k98c8UkHF8hodZg';
+let vttLoaded = false;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let campaignId = null, campaignCode = null, dmPin = null;
@@ -2739,7 +2740,7 @@ function vttRenderTokenList() {
     </div>`).join('');
 }
 
-let vttLoaded = false; // init handled in main tab forEach
+// vttLoaded declared at top // init handled in main tab forEach
 
 async function vttGotoAndShow() {
   // Switch to VTT tab

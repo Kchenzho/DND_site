@@ -11,12 +11,22 @@ const _txt = (v) => (Array.isArray(v) ? v.join('\n') : (v || '')).trim();
 const _arr = (v) => Array.isArray(v) ? v : (v ? [v] : []);
 const _int = (v) => parseInt(v) || 0;
 
-function _parseAtk(atkStr) {
-  // "Talon|4|1d4+2"  →  {n, a, d}
-  if (!atkStr) return null;
+function _parseAtk(atkVal) {
+  // atkVal can be a string "Talon|4|1d4+2" OR array ["One Handed|9|1d6+6","Two Handed|9|1d8+6"]
+  if (!atkVal) return null;
+  // If array, use first entry
+  const atkStr = Array.isArray(atkVal) ? atkVal[0] : atkVal;
+  if (typeof atkStr !== 'string') return null;
   const p = atkStr.split('|');
   if (p.length < 3) return null;
   return { n: p[0].trim(), a: _int(p[1]), d: p[2].trim() };
+}
+
+function _parseAtkAll(atkVal) {
+  // Returns ALL attack variants (for monsters with One Handed/Two Handed etc.)
+  if (!atkVal) return [];
+  const arr = Array.isArray(atkVal) ? atkVal : [atkVal];
+  return arr.map(s => _parseAtk(s)).filter(Boolean);
 }
 
 function _parseAbilityBonuses(abilityStr) {
@@ -70,24 +80,31 @@ const CLASS_SKILL_CHOICES = {
 
 // ── MONSTERS ─────────────────────────────────────────────────
 function adaptMonsters(raw) {
+  // Normalize a field that can be null, a single dict, or an array of dicts
+  function toArr(v) {
+    if (!v) return [];
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'object') return [v]; // single dict → wrap in array
+    return [];
+  }
+
   return raw.map(m => {
-    const actions = _arr(m.action).map(a => {
-      const atk = _parseAtk(a.attack);
-      return { n: a.name || '', tx: _arr(a.text || a.text), atk };
+    const actions = toArr(m.action).map(a => {
+      const atks = _parseAtkAll(a.attack); // handle string OR array
+      const atk  = atks[0] || null;        // primary attack
+      return { n: a.name || '', tx: _arr(a.text), atk, atks };
     });
-    const traits = _arr(m.trait).map(t => ({
-      n: t.name || '', tx: _arr(t.text || t.text)
+    const traits = toArr(m.trait).map(t => ({
+      n: t.name || '', tx: _arr(t.text)
     }));
-    const reactions = _arr(m.reaction).map(r => ({
+    const reactions = toArr(m.reaction).map(r => ({
       n: r.name || '', tx: _arr(r.text)
     }));
-    const legendary = _arr(m.legendary).map(l => ({
+    const legendary = toArr(m.legendary).map(l => ({
       n: l.name || '', tx: _arr(l.text)
     }));
-    // Extract attacks from actions for quick combat use
-    const atk = actions
-      .filter(a => a.atk)
-      .map(a => a.atk);
+    // All attacks across all actions (for combat)
+    const atk = actions.flatMap(a => a.atks || (a.atk ? [a.atk] : []));
 
     return {
       n:   m.name,
